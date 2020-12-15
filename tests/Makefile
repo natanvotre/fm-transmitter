@@ -7,3 +7,5 @@ TOPLEVEL = max10
 MODULE = test-case
 
 export COCOTB_SHARE_DIR=$(VENV_SITE_PACKAGES)/cocotb/share
+
+include $(shell cocotb-config --makefiles)/Makefile.sim
