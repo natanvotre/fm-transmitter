@@ -141,3 +141,4 @@ set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_
 # Source Files
 
 set_global_assignment -name VERILOG_FILE src/max10.v
+set_global_assignment -name VERILOG_FILE src/utils/clock_divisor.v
