@@ -1,8 +1,8 @@
 all: build send
 
-BOARD="NEEK10 [1-2.4]"
-OUTPUT_SOF=output_files/BlinkLed.sof
-PROJECT_NAME=BlinkLed
+BOARD="NEEK10 [1-2]"
+PROJECT_NAME=FmTransmitter
+OUTPUT_SOF=output_files/$(PROJECT_NAME).sof
 
 build:
 	quartus_map --read_settings_files=on --write_settings_files=off ${PROJECT_NAME} -c ${PROJECT_NAME}
