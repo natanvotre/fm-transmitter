@@ -1,3 +1,4 @@
+`timescale 1us/1ns
 module max10 (
     input MAX10_CLK1_50,
     input FPGA_RESET_n,
