@@ -24,6 +24,7 @@ module adc_qsys (
 	wire    rst_controller_reset_out_reset;     // rst_controller:reset_out -> altpll_sys:reset
 	wire    rst_controller_001_reset_out_reset; // rst_controller_001:reset_out -> modular_adc_0:reset_sink_reset_n
 
+	`ifdef IS_ALTERA
 	adc_qsys_altpll_sys altpll_sys (
 		.clk       (clk_clk),                          //       inclk_interface.clk
 		.reset     (rst_controller_reset_out_reset),   // inclk_interface_reset.reset
@@ -183,5 +184,6 @@ module adc_qsys (
 		.reset_in15     (1'b0),                               // (terminated)
 		.reset_req_in15 (1'b0)                                // (terminated)
 	);
+	`endif
 
 endmodule

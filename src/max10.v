@@ -60,10 +60,10 @@ module max10 (
         .SYS_CLK(clk_48),
         .SYNC_TR(SAMPLE_TR),
         .RESET_n(rst_delayed_n),
-        .ADC_CH(7),
+        .ADC_CH(5'd7),
         .DATA(ADC_RD),
         .DATA_VALID(ADC_RESPONSE),
-        .FITER_EN(1)
+        .FITER_EN(1'b1)
     );
 
     wire ROM_CK;
@@ -102,9 +102,9 @@ module max10 (
         .SDATA_IN(AUDIO_DOUT_MFP2),
         .RESET_n(rst_delayed_n),
         .ADC_MIC(ADC_RD),
-        .SW_BYPASS(0),      // 0:on-board mic, 1 :line-in
-        .SW_OBMIC_SIN(0),   // 1:sin, 0 : mic
-        .ROM_ADDR(ROM_ADDR),
+        .SW_BYPASS(1'b0),      // 0:on-board mic, 1 :line-in
+        .SW_OBMIC_SIN(1'b0),   // 1:sin, 0 : mic
+        .ROM_ADDR(),
         .ROM_CK(ROM_CK),
         .SUM_AUDIO(SUM_AUDIO)
     );

@@ -1,4 +1,4 @@
-SRC_PATH=$(pwd)
+SRC_PATH="$(pwd)/src"
 VERILOG_FILES=$(find $SRC_PATH -name "*.v")
 TOPLEVEL="max10"
 
