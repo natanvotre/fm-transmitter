@@ -32,6 +32,7 @@ transmitter just using an FPGA and everything that an FPGA can get.
   - [x] Onboarded Mic, which uses the ADC port for Max10 ADC protocol
   - [x] Line out of Onboarded CODEC IC [TLV320AIC3254](https://www.ti.com/lit/ds/symlink/tlv320aic3254.pdf?ts=1608386796342)
   - [x] Sample rate 48kHz
+  - [x] Led meter to inform the audio energy
 
 # Aiming New Features
 
