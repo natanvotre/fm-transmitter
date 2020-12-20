@@ -293,8 +293,14 @@ set_global_assignment -name VERILOG_FILE src/audio-codec/I2S_ASSESS.v
 set_global_assignment -name VERILOG_FILE src/audio-codec/MAX10_ADC.v
 set_global_assignment -name VERILOG_FILE src/audio-codec/SPI_RAM.v
 set_global_assignment -name VERILOG_FILE src/audio-codec/AUDIO_PLL.v
-set_global_assignment -name QIP_FILE src/audio-codec/adc_qsys/synthesis/adc_qsys.qip
+set_global_assignment -name QIP_FILE src/audio-codec/adc_qsys/adc_qsys.qip
 set_global_assignment -name HEX_FILE V/LOOP.hex
 
 set_global_assignment -name VERILOG_FILE src/utils/LED_METER.v
 set_global_assignment -name VERILOG_FILE src/utils/PEAK_DELAY.v
+
+#============================================================
+# Macros
+#============================================================
+
+set_global_assignment -name VERILOG_MACRO "IS_ALTERA=1"
