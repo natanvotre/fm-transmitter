@@ -1,0 +1,18 @@
+	component adc_qsys is
+		port (
+			clk_clk                              : in  std_logic                     := 'X';             -- clk
+			clock_bridge_sys_out_clk_clk         : out std_logic;                                        -- clk
+			modular_adc_0_command_valid          : in  std_logic                     := 'X';             -- valid
+			modular_adc_0_command_channel        : in  std_logic_vector(4 downto 0)  := (others => 'X'); -- channel
+			modular_adc_0_command_startofpacket  : in  std_logic                     := 'X';             -- startofpacket
+			modular_adc_0_command_endofpacket    : in  std_logic                     := 'X';             -- endofpacket
+			modular_adc_0_command_ready          : out std_logic;                                        -- ready
+			modular_adc_0_response_valid         : out std_logic;                                        -- valid
+			modular_adc_0_response_channel       : out std_logic_vector(4 downto 0);                     -- channel
+			modular_adc_0_response_data          : out std_logic_vector(11 downto 0);                    -- data
+			modular_adc_0_response_startofpacket : out std_logic;                                        -- startofpacket
+			modular_adc_0_response_endofpacket   : out std_logic;                                        -- endofpacket
+			reset_reset_n                        : in  std_logic                     := 'X'              -- reset_n
+		);
+	end component adc_qsys;
+

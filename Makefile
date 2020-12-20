@@ -1,6 +1,6 @@
 all: build send
 
-BOARD="NEEK10 [1-2]"
+BOARD="${shell quartus_pgm --auto | sed -En "s/^.* (NEEK10 \[.*\])/\1/p"}"
 PROJECT_NAME=FmTransmitter
 OUTPUT_SOF=output_files/$(PROJECT_NAME).sof
 
