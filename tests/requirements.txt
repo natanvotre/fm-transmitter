@@ -1,0 +1,4 @@
+matplotlib
+pyverilog
+wheel
+cocotb
