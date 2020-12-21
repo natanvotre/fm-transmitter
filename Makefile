@@ -16,4 +16,4 @@ send:
 	quartus_pgm --cable=${BOARD} -m JTAG -o p\;${OUTPUT_SOF}
 
 test:
-	python3 tests/test.py module max10
+	cd tests; python3 test.py module max10

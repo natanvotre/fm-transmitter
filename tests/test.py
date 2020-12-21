@@ -51,11 +51,10 @@ def test_module(name: str, src_dir: Path, **kwargs):
     cmd =  re.sub(' +', ' ', re.sub('\n', ' ', f"""
         COCOTB_SHARE_DIR={site_pkg}/cocotb/share
         TOPLEVEL_LANG=verilog
-        VERILOG_SOURCES="$(find {src_dir} -name \\"*.v\\")"
         TOPLEVEL={name}
         MODULE=test_{name}
         SIM=icarus
-        make -f $(cocotb-config --makefiles)/Makefile.sim
+        make -C {Path(__file__).parent.absolute()}
     """))
     print(cmd)
     result = subprocess.call(
