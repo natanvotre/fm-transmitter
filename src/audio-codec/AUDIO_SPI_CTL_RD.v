@@ -150,10 +150,10 @@ end
 //--------ROM/RAM Table for Audio Codec  Register ----
 wire [15:0]REG_DATA ;
 reg        ROM_CK ;
-
+wire spi_clk = ROM_CK;
 SPI_RAM R(
 	.address(WORD_CNT[6:0]),
-	.clock(ROM_CK),
+	.clock(spi_clk),
 	.data(),
 	.wren (1'b0),
 	.q(REG_DATA)
