@@ -1,12 +1,10 @@
-# test_dff.py
-
 import random
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
 @cocotb.test()
-async def test_dff_simple(dut):
+async def test_mock_max10(dut):
     """ Test that d propagates to q """
 
     clock = Clock(dut.MAX10_CLK1_50, 10, units="us")  # Create a 10us period clock on port clk
@@ -14,3 +12,4 @@ async def test_dff_simple(dut):
 
     for i in range(10):
         await FallingEdge(dut.MAX10_CLK1_50)
+    assert True == False
