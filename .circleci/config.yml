@@ -7,20 +7,20 @@ jobs:
     steps:
       - checkout
       - run: make lint
-  # test-verilog:
-  #   docker:
-  #     - image: natanvotre/verilog-machine:0.0.1
-  #   environment:
-  #     VENV: /opt/venv
-  #   steps:
-  #     - checkout
-  #     - run: make test
+  test-verilog:
+    docker:
+      - image: natanvotre/verilog-machine:0.0.1
+    environment:
+      VENV: /opt/venv
+    steps:
+      - checkout
+      - run: . $VENV/bin/activate; make test
 
 workflows:
   version: 2
   test:
     jobs:
       - lint-verilog
-      # - test-verilog:
-      #     requires:
-      #       - lint-verilog
+      - test-verilog:
+          requires:
+            - lint-verilog
