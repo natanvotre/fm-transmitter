@@ -12,4 +12,3 @@ async def test_mock_max10(dut):
 
     for i in range(10):
         await FallingEdge(dut.MAX10_CLK1_50)
-    assert True == False
