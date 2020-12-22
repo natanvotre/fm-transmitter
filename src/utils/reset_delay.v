@@ -1,4 +1,4 @@
-module reset_delay #(parameter DELAY = 32'hfffff, parameter LEN_LOG = 32)
+module reset_delay #(parameter DELAY = 32'd10000, parameter LEN_LOG = 32)
 (
     input clk,
     input rst_in,
@@ -17,7 +17,7 @@ module reset_delay #(parameter DELAY = 32'hfffff, parameter LEN_LOG = 32)
         end
         else
         begin
-            if (delay_count < 32'hfffff)
+            if (delay_count < DELAY)
                 delay_count <= delay_count + 1;
             else
                 rst_reg <= 0;
