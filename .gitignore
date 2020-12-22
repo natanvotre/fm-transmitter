@@ -9,3 +9,4 @@ __pycache__
 sim_build
 venv
 results.xml
+*.out
