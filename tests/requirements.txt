@@ -2,3 +2,5 @@ matplotlib
 pyverilog
 wheel
 cocotb
+cocotb-test
+pytest
