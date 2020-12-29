@@ -4,3 +4,4 @@ wheel==0.36.2
 cocotb==1.4.0
 cocotb-test==0.1.1
 pytest==6.2.1
+stringcase==1.2.0
