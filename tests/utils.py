@@ -30,18 +30,29 @@ class BaseTest:
 
         return str_params
 
-    def run_simulator(self, name, parameters=None):
+    def run_simulator(self, name, parameters=None, module=None, values=None):
+        if module is None:
+            module = f'test_{name}'
+
         parameters = self.transform_params(parameters)
+        values = self.transform_params(values)
 
         os.environ['SIM'] = 'icarus'
         print(f'Testing {name} with parameters: {parameters}')
+        extra_env = {}
+        if parameters is not None:
+            for key, value in parameters.items():
+                extra_env[key] = value
+        if values is not None:
+            for key, value in values.items():
+                extra_env[key] = value
 
         return simulator.run(
             verilog_sources=self.list_verilog_files(),
             toplevel=name,
-            module=f'test_{name}',
+            module=module,
             parameters=parameters,
-            extra_env=parameters,
+            extra_env=extra_env,
             sim_build="sim_build/"
                 + "_".join(("{}={}".format(*i) for i in parameters.items())),
         )

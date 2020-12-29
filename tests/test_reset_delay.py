@@ -12,7 +12,7 @@ from utils import BaseTest
 
 @cocotb.test()
 async def _test_reset_delay(dut):
-    """ Test that d propagates to q """
+    """ Test that set reset delay for different values of DELAY"""
 
     # Create a 10us period clock on port clk
     clock = Clock(dut.clk, 10, units="us")
