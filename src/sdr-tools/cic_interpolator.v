@@ -63,15 +63,12 @@ module cic_interpolator #(
     wire [WIDTH-1:0] data_shifted;
     cic_gain_bank #(.WIDTH(WIDTH))
         cic_gain_bank (
+            .clk(clk),
             .rate(rate),
             .data_in(integrator[N-1]),
             .data_out(data_shifted)
         );
 
-    reg [WIDTH-1:0] data_out_reg;
-    always @(posedge clk)
-        data_out_reg <= data_shifted;
-
-    assign data_out = data_out_reg;
+    assign data_out = data_shifted;
 
 endmodule

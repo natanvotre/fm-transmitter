@@ -2,9 +2,10 @@ module cic_gain_bank #(
     parameter WIDTH=16,
     parameter MAX_BIT_GAIN=21
 ) (
+    input clk,
     input [7:0] rate,
     input [WIDTH+MAX_BIT_GAIN-1:0] data_in,
-    output reg [WIDTH-1:0] data_out
+    output [WIDTH-1:0] data_out
 );
     function [4:0] bit_gain;
         input [7:0] rate;
@@ -39,32 +40,31 @@ module cic_gain_bank #(
         endcase
     endfunction
 
-   wire [4:0] shift = bit_gain(rate);
-
+    wire [4:0] shift = bit_gain(rate);
 
     reg [WIDTH-1:0] data_out_reg;
-    always @*
+    always @(posedge clk)
         case(shift)
-            5'd0 : data_out_reg = data_in[0+WIDTH-1:0];
-            5'd3 : data_out_reg = data_in[3+WIDTH-1:3];
-            5'd5 : data_out_reg = data_in[5+WIDTH-1:5];
-            5'd6 : data_out_reg = data_in[6+WIDTH-1:6];
-            5'd7 : data_out_reg = data_in[7+WIDTH-1:7];
-            5'd8 : data_out_reg = data_in[8+WIDTH-1:8];
-            5'd9 : data_out_reg = data_in[9+WIDTH-1:9];
-            5'd10: data_out_reg = data_in[10+WIDTH-1:10];
-            5'd11: data_out_reg = data_in[11+WIDTH-1:11];
-            5'd12: data_out_reg = data_in[12+WIDTH-1:12];
-            5'd13: data_out_reg = data_in[13+WIDTH-1:13];
-            5'd14: data_out_reg = data_in[14+WIDTH-1:14];
-            5'd15: data_out_reg = data_in[15+WIDTH-1:15];
-            5'd16: data_out_reg = data_in[16+WIDTH-1:16];
-            5'd17: data_out_reg = data_in[17+WIDTH-1:17];
-            5'd18: data_out_reg = data_in[18+WIDTH-1:18];
-            5'd19: data_out_reg = data_in[19+WIDTH-1:19];
-            5'd20: data_out_reg = data_in[20+WIDTH-1:20];
-            5'd21: data_out_reg = data_in[21+WIDTH-1:21];
-            default: data_out_reg = data_in[21+WIDTH-1:21];
+            5'd0 : data_out_reg <= data_in[0+WIDTH-1:0];
+            5'd3 : data_out_reg <= data_in[3+WIDTH-1:3];
+            5'd5 : data_out_reg <= data_in[5+WIDTH-1:5];
+            5'd6 : data_out_reg <= data_in[6+WIDTH-1:6];
+            5'd7 : data_out_reg <= data_in[7+WIDTH-1:7];
+            5'd8 : data_out_reg <= data_in[8+WIDTH-1:8];
+            5'd9 : data_out_reg <= data_in[9+WIDTH-1:9];
+            5'd10: data_out_reg <= data_in[10+WIDTH-1:10];
+            5'd11: data_out_reg <= data_in[11+WIDTH-1:11];
+            5'd12: data_out_reg <= data_in[12+WIDTH-1:12];
+            5'd13: data_out_reg <= data_in[13+WIDTH-1:13];
+            5'd14: data_out_reg <= data_in[14+WIDTH-1:14];
+            5'd15: data_out_reg <= data_in[15+WIDTH-1:15];
+            5'd16: data_out_reg <= data_in[16+WIDTH-1:16];
+            5'd17: data_out_reg <= data_in[17+WIDTH-1:17];
+            5'd18: data_out_reg <= data_in[18+WIDTH-1:18];
+            5'd19: data_out_reg <= data_in[19+WIDTH-1:19];
+            5'd20: data_out_reg <= data_in[20+WIDTH-1:20];
+            5'd21: data_out_reg <= data_in[21+WIDTH-1:21];
+            default: data_out_reg <= data_in[21+WIDTH-1:21];
         endcase
 
     assign data_out = data_out_reg;
