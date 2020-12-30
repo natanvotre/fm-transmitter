@@ -1,6 +1,6 @@
-matplotlib
-pyverilog
-wheel
-cocotb
-cocotb-test
-pytest
+matplotlib==3.3.3
+pyverilog==1.2.1
+wheel==0.36.2
+cocotb==1.4.0
+cocotb-test==0.1.1
+pytest==6.2.1
