@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import random
+from dataclasses import dataclass
 
 import pytest
 import cocotb
@@ -9,35 +10,45 @@ from cocotb.triggers import FallingEdge, NextTimeStep, Event,Timer
 from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb.handle import ModifiableObject, HierarchyObject
 from cocotb.monitors import Monitor
-import cocotb.log
-from utils import BaseTest
+
+from utils import BaseSignalTest
 
 
-def log_test(msg):
-    print(f'[Test Sign Extend] {msg}')
-
-@cocotb.test()
-async def _test_sign_extend(dut: HierarchyObject):
+@cocotb.test(skip = False)
+def init(dut: HierarchyObject):
     """ Test Sign extend for different values of data_in """
-    length_in = int(os.environ["LENGTH_IN"])
-    length_out = int(os.environ["LENGTH_OUT"])
-
-    log_test(f'len: {os.environ["LENGTH_IN"]}')
-    assert length_in == len(dut.data_in.value.binstr)
-    assert length_out == len(dut.data_out.value.binstr)
-    dut.data_in.value = BinaryValue(
-        value=int(os.environ["value"]),
-        n_bits=length_in,
-        bigEndian=False,
-        binaryRepresentation=BinaryRepresentation.TWOS_COMPLEMENT,
+    test = TestSignExtend()
+    yield test.cocotb_test_sign_extend(
+        dut=SignExtend.convert(dut),
+        params=TestingParameters(),
     )
-    await Timer(10, units="us")
-    log_test(f'data_in: {dut.data_in.value.signed_integer}')
-    log_test(f'data_out: {dut.data_out.value.signed_integer}')
-    assert dut.data_out.value.signed_integer == int(os.environ["value"])
 
 
-class TestSignExtend(BaseTest):
+@dataclass
+class SignExtend:
+    data_in: ModifiableObject
+    data_out: ModifiableObject
+
+    def convert(dut: HierarchyObject):
+        return SignExtend(
+            dut.data_in,
+            dut.data_out,
+        )
+
+
+@dataclass
+class TestingParameters:
+    data_value: int
+    length_in: int
+    length_out: int
+
+    def __init__(self):
+        self.data_value = int(os.environ["value"])
+        self.length_in = int(os.environ["LENGTH_IN"])
+        self.length_out = int(os.environ["LENGTH_OUT"])
+
+
+class TestSignExtend(BaseSignalTest):
 
     @pytest.mark.parametrize("length_in, length_out, value", [
         (10, 12, 511),
@@ -54,4 +65,27 @@ class TestSignExtend(BaseTest):
         values = {
             "value": value,
         }
-        self.run_simulator('sign_extend', parameters=parameters, values=values)
+        self.run_simulator(parameters=parameters, values=values)
+
+    @cocotb.coroutine
+    def cocotb_test_sign_extend(
+        self,
+        dut: SignExtend,
+        params: TestingParameters,
+    ):
+        self.log(f'value type: {type(dut.data_in.value)}')
+
+        # Check lengths
+        self.log(f'input length: {params.length_in}')
+        self.log(f'output length: {params.length_out}')
+        assert params.length_in == len(dut.data_in.value.binstr)
+        assert params.length_out == len(dut.data_out.value.binstr)
+
+        # Set test value
+        dut.data_in.value = self.set_data(params.data_value, params.length_in)
+        yield Timer(10, units="us")
+
+        # Check Extended signal value at the output
+        self.log(f'data_in: {dut.data_in.value.signed_integer}')
+        self.log(f'data_out: {dut.data_out.value.signed_integer}')
+        assert dut.data_out.value.signed_integer == params.data_value

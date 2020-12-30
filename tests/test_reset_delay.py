@@ -14,7 +14,7 @@ from utils import BaseTest
 async def _test_reset_delay(dut):
     """ Test that set reset delay for different values of DELAY"""
 
-    # Create a 10us period clock on port clk
+    # Create a 10us period clock
     clock = Clock(dut.clk, 10, units="us")
     cocotb.fork(clock.start())
 
@@ -23,15 +23,18 @@ async def _test_reset_delay(dut):
     for i in range(10):
         await FallingEdge(dut.clk)
 
+    # Check initial reset
     dut.rst_in = 1
     await FallingEdge(dut.clk)
     assert dut.rst_out == 1
-    dut.rst_in = 0
 
+    # Turn off input reset and keep checking the output reset
+    dut.rst_in = 0
     for i in range(int(os.environ["DELAY"])):
         await FallingEdge(dut.clk)
         assert dut.rst_out == 1
 
+    # Check after the desired time it goes to off
     await FallingEdge(dut.clk)
     assert dut.rst_out == 0
 
@@ -55,4 +58,4 @@ class TestResetDelay(BaseTest):
             "DELAY": delay_value,
             "LEN_LOG": np.ceil(np.log2(delay_value)),
         }
-        self.run_simulator('reset_delay', parameters=parameters)
+        self.run_simulator(parameters=parameters)
