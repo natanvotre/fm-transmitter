@@ -296,6 +296,11 @@ set_global_assignment -name VERILOG_FILE src/audio-codec/AUDIO_PLL.v
 set_global_assignment -name QIP_FILE src/audio-codec/adc_qsys/adc_qsys.qip
 set_global_assignment -name HEX_FILE V/LOOP.hex
 
+set_global_assignment -name VERILOG_FILE src/sdr-tools/cic_interpolator.v
+set_global_assignment -name VERILOG_FILE src/sdr-tools/cic_gain_bank.v
+
+set_global_assignment -name VERILOG_FILE src/utils/sign_extend.v
+
 set_global_assignment -name VERILOG_FILE src/utils/LED_METER.v
 set_global_assignment -name VERILOG_FILE src/utils/PEAK_DELAY.v
 
