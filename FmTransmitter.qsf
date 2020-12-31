@@ -298,6 +298,8 @@ set_global_assignment -name HEX_FILE V/LOOP.hex
 
 set_global_assignment -name VERILOG_FILE src/sdr-tools/cic_interpolator.v
 set_global_assignment -name VERILOG_FILE src/sdr-tools/cic_gain_bank.v
+set_global_assignment -name VERILOG_FILE src/sdr-tools/cordic.v
+set_global_assignment -name VERILOG_FILE src/sdr-tools/cordic_step_rotation.v
 
 set_global_assignment -name VERILOG_FILE src/utils/sign_extend.v
 
