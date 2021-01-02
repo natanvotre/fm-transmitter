@@ -2,6 +2,9 @@
 
 This project aims to create an FM transmitter using just an FPGA.
 
+- **Current Documentations**:
+  - [CORDIC](docs/cordic.md)
+
 # Goal
 
 Build an FPGA-based Fully Digital FM Transmitter, i.e. create an FM
@@ -18,8 +21,10 @@ transmitter just using an FPGA and everything that an FPGA can get.
 - [x] Audio Loopback using data with sample rate of 48kHz
 - [x] Create test environment and add on CI
 - [x] Create and test sample interpolators to increase fs throughout the DUC (digital up-converter) chain, search for Comb filters
-- [ ] Create and test the frequency shifter to the DUC chain (search for
+- [x] Create and test the frequency shifter to the DUC chain (search for
   CORDIC).
+  - [x] Implement and test a CORDIC algorithm
+  - [x] Make sure it is possible to shift in frequency complex signals
 - [ ] Create and test an HPSDM (High-Pass Sigma-Delta Modulator)
 - [ ] Create and test a FM modulator in medium fs
 - [ ] Create and test a DUC chain using the developed modules
@@ -42,7 +47,9 @@ transmitter just using an FPGA and everything that an FPGA can get.
   - [x] Led meter to inform the audio energy
 - [x] Sdr Tools
   - [x] Cic interpolator
-  - [ ] Up-converter
+  - [x] Up-converter
+  - [ ] FM modulator
+- [ ] AD/DA $\Sigma\Delta$ modulators
 
 # Aiming New Features
 
@@ -88,3 +95,12 @@ Currently, there are tests for:
     - Using 32-bit WIDTH
     - Save impulse response output, raw and FFT
   - FFT setup using _hanning_ window to smooth side-lobes
+- [x] [cordic](src/sdr-tools/cordic.v)
+  - Test random complex input values (100 for each testcase) with random
+    values and angles, including random rotational angles.
+      - Assert the whether the pipeline has the actual depth
+      - Assert the circular rotation mode is working with the expected
+        values, checking if the data was precise, error value less than
+        5.
+      - Assert the circular vectoring mode is working with the same
+        approach.
