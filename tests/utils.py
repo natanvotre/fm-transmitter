@@ -74,6 +74,7 @@ class BaseTest:
 
         os.environ['SIM'] = 'icarus'
         print(f'Testing {name} with parameters: {parameters}')
+        print(f'Testing {name} with values: {values}')
         extra_env = {}
         if parameters is not None:
             for key, value in parameters.items():
