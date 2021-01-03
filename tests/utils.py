@@ -9,9 +9,11 @@ from stringcase import titlecase, snakecase
 
 from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb_test import simulator
+
 test_dir = Path(__file__).parent
 src_dir = test_dir.parent / 'src'
 results_dir = test_dir / 'results'
+
 
 class BaseTest:
     _module_name = None

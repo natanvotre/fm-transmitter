@@ -1,21 +1,16 @@
-import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import random
 from dataclasses import dataclass
-from numpy import array, ndarray
-from pathlib import Path
-from typing import List, Tuple
+from numpy import ndarray
 
 import pytest
 import cocotb
-from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb.clock import Clock
 from cocotb.handle import ModifiableObject, HierarchyObject
-from cocotb.triggers import FallingEdge, NextTimeStep, Event, Timer
+from cocotb.triggers import FallingEdge
 
-from tests.utils import BaseSignalTest, results_dir
+from tests.utils import BaseSignalTest
 
 
 @cocotb.test(skip = False)
