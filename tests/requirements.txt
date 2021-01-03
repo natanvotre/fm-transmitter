@@ -1,8 +1,8 @@
-matplotlib==3.3.3
-pyverilog==1.2.1
-wheel==0.36.2
-cocotb==1.4.0
 cocotb-test==0.1.1
+cocotb==1.4.0
+matplotlib==3.3.3
 pytest==6.2.1
+pyverilog==1.2.1
+scipy==1.6.0
 stringcase==1.2.0
-scipy==1.19.4
+wheel==0.36.2
