@@ -17,7 +17,7 @@ from cocotb.clock import Clock
 from cocotb.handle import ModifiableObject, HierarchyObject
 from cocotb.triggers import FallingEdge, NextTimeStep, Event, Timer
 
-from utils import BaseSignalTest, results_dir
+from tests.utils import BaseSignalTest, results_dir
 
 
 @cocotb.test(skip = False)
@@ -92,16 +92,6 @@ class TestingParameters:
         self.data_q = np.array(json.loads(os.environ["data_q"]))
         self.rotation = np.array(json.loads(os.environ["rotation"]))
 
-def quantizer(data, width, uns=False) -> ndarray:
-    if uns:
-        d_min = 0
-        d_max = 2**width - 1
-        gain = 2**width
-    else:
-        d_min = -2**(width-1)
-        d_max = 2**(width-1)-1
-        gain = 2**(width-1)
-    return np.clip(np.array(data)*gain, d_min, d_max).astype(int)
 
 def gen_random_vectors(size, abs_range=(0.1, 1)):
     abs_min, abs_max = abs_range
@@ -265,9 +255,9 @@ class TestCordic(BaseSignalTest):
         z_out = []
         len_data = len(params.data_i)
 
-        data_i: List[int] = quantizer(params.data_i, params.WIDTH).tolist()
-        data_q: List[int] = quantizer(params.data_q, params.WIDTH).tolist()
-        rotation: List[int] = quantizer(
+        data_i: List[int] = self.quantizer(params.data_i, params.WIDTH).tolist()
+        data_q: List[int] = self.quantizer(params.data_q, params.WIDTH).tolist()
+        rotation: List[int] = self.quantizer(
             np.array(params.rotation)/(2*np.pi),
             params.ZWIDTH,
             uns=True

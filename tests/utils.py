@@ -1,14 +1,14 @@
 import os
 import subprocess
-import numpy as np
-from pathlib import Path
-from stringcase import titlecase, snakecase
-from numpy import ndarray
 import matplotlib.pyplot as plt
+import numpy as np
+from numpy import ndarray
+from pathlib import Path
+from scipy.io import wavfile
+from stringcase import titlecase, snakecase
 
 from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb_test import simulator
-
 test_dir = Path(__file__).parent
 src_dir = test_dir.parent / 'src'
 results_dir = test_dir / 'results'
@@ -67,7 +67,7 @@ class BaseTest:
         if name is None:
             name = self.module_name
         if module is None:
-            module = f'test_{name}'
+            module = f'tests.test_{name}'
 
         parameters = self.transform_params(parameters)
         values = self.transform_params(values)
@@ -119,20 +119,53 @@ class BaseSignalTest(BaseTest):
             representation=BinaryRepresentation.UNSIGNED,
         )
 
-    def generate_sin(self, size, fc, width, fs=8e3):
+    def quantizer(self, data, width, uns=False) -> ndarray:
+        if uns:
+            d_min = 0
+            d_max = 2**width - 1
+            gain = 2**width
+        else:
+            d_min = -2**(width-1)
+            d_max = 2**(width-1)-1
+            gain = 2**(width-1)
+        return np.clip(np.array(data)*gain, d_min, d_max).astype(int)
+
+    def generate_norm_sin(self, size, fc, fs=8e3):
         n = np.linspace(0, size-1, size)
         t = n/fs
-        data_norm = np.sin(2*np.pi*fc*t)
+        return np.sin(2*np.pi*fc*t)
+
+    def generate_sin(self, size, fc, width, fs=8e3):
+        data_norm = self.generate_norm_sin(size, fc, fs)
         return (data_norm*(2**(width-1)-1)).astype(int).tolist()
 
     def calc_fft(self, data: ndarray):
         len_data = len(data)
+        self.log(f'data shape: {data.shape}')
         windowed_data = data * np.hanning(len_data)
         return 20*np.log10(
             np.abs(
                 np.fft.fft(windowed_data)
             )[:int(len_data/2)] / len_data
         )
+
+    def save_plot(self, data, name, test_name):
+        test_dir: Path = self.folder_dir / test_name
+        test_dir.mkdir(exist_ok=True)
+        output_file = test_dir / name
+        plt.clf()
+        plt.plot(data)
+        plt.savefig(output_file)
+
+    def save_wav_data(self, data, name, test_name, fs=8000):
+        test_dir: Path = self.folder_dir / test_name
+        test_dir.mkdir(exist_ok=True)
+        output_file = test_dir / name
+        wavfile.write(str(output_file), int(fs), data)
+
+    def save_data(self, data, name, test_name, fs=8000):
+        self.save_wav_data(data, f'{name}.wav', test_name, fs)
+        self.save_plot(data, f'{name}.png', test_name)
 
     def check_sin(self, data: ndarray, fc: float, fc_band=200, fs=8e3, snr=30):
         len_data = len(data)
@@ -165,3 +198,24 @@ class BaseSignalTest(BaseTest):
         self.log(f'Power noise: {powered_noise}')
         self.log(f'Perceived SNR: {sin_snr}')
         assert sin_snr > snr
+
+    def check_signal_integrity(
+        self,
+        data_in,
+        data_out,
+        freq_band,
+        fs,
+        min_db,
+        max_diff_db,
+    ):
+        len_data = len(data_in)
+        min_bin, max_bin = (int(f/fs*len_data) for f in freq_band)
+
+        fft_in = self.calc_fft(data_in)[min_bin:max_bin]
+        fft_out = self.calc_fft(data_out)[min_bin:max_bin]
+
+        clipped_in = np.clip(fft_in, min_db, 10)
+        clipped_out = np.clip(fft_out, min_db, 10)
+
+        diff_abs = np.abs(clipped_out - clipped_in)
+        assert max(diff_abs) < max_diff_db
