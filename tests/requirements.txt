@@ -5,3 +5,4 @@ cocotb==1.4.0
 cocotb-test==0.1.1
 pytest==6.2.1
 stringcase==1.2.0
+scipy==1.19.4

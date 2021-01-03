@@ -3,7 +3,7 @@ import pytest
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
-from utils import BaseTest
+from tests.utils import BaseTest
 
 
 @cocotb.test()

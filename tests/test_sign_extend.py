@@ -11,7 +11,7 @@ from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb.handle import ModifiableObject, HierarchyObject
 from cocotb.monitors import Monitor
 
-from utils import BaseSignalTest
+from tests.utils import BaseSignalTest
 
 
 @cocotb.test(skip = False)

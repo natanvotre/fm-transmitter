@@ -2,20 +2,17 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import random
 from dataclasses import dataclass
-from numpy import array, ndarray
-from pathlib import Path
-from typing import List, Tuple
+from numpy import ndarray
+from typing import List
 
 import pytest
 import cocotb
-from cocotb.binary import BinaryValue, BinaryRepresentation
 from cocotb.clock import Clock
 from cocotb.handle import ModifiableObject, HierarchyObject
-from cocotb.triggers import FallingEdge, NextTimeStep, Event, Timer
+from cocotb.triggers import FallingEdge
 
-from utils import BaseSignalTest, results_dir
+from tests.utils import BaseSignalTest, results_dir
 
 
 @cocotb.test(skip = False)
@@ -57,18 +54,20 @@ class CicInterpolator:
 @dataclass
 class TestingParameters:
     WIDTH: int
-    data: List[int]
+    data: ndarray
     rate: int
     name: str
     fc: float
+    fs: int
 
     def __init__(self):
         self.WIDTH = int(os.environ["WIDTH"])
-        self.data = json.loads(os.environ["data"])
+        self.data = np.array(json.loads(os.environ["data"]))
         self.rate = int(os.environ["rate"])
         self.name = os.environ["name"]
         self.fc = float(os.environ.get("fc", -1))
         self.is_sin = bool(os.environ.get('sin_test', False))
+        self.fs = 8e3
 
 
 def generate_values():
@@ -77,8 +76,8 @@ def generate_values():
     rates = [2, 10, 30]
     fcs = [1e3, 500, 2e3]
     sins = [
-        BaseSignalTest().generate_sin(*params)
-        for params in zip(sizes, fcs, widths)
+        BaseSignalTest().generate_norm_sin(*params)
+        for params in zip(sizes, fcs)
     ]
     names = [
         f'test_sin_{f/1e3:.2f}kHz_{s}S_{r}R_{w}b'
@@ -103,7 +102,7 @@ class TestCicInterpolator(BaseSignalTest):
             "WIDTH": width,
         }
         values = {
-            "data": data,
+            "data": data.tolist(),
             "fc": fc,
             "name": name,
             "rate": rate,
@@ -229,7 +228,7 @@ class TestCicInterpolator(BaseSignalTest):
         input_index = 0
         data_out = []
         data_in = []
-        data = params.data
+        data = self.quantizer(params.data, params.WIDTH).tolist()
         len_data = len(data)
         for i in range((len_data+end_zeros)*params.rate*out_clk_rate):
             yield FallingEdge(dut.clk)
@@ -252,30 +251,26 @@ class TestCicInterpolator(BaseSignalTest):
 
     # Check methods
     def check_sin_results(self):
-        dut = self.dut
         params = self.params
-
-        plt.clf()
-        plt.plot(self.data_in)
-        plt.savefig(self.folder_dir / f'{params.name}_data_in.png')
 
         max_value = 2**(params.WIDTH-1)
         norm_data_out = self.data_out/max_value
         expected_data_out = self.interpolate(self.data_in, params.rate)
         norm_expected_data_out = expected_data_out/max_value
-        plt.clf()
-        plt.plot(norm_expected_data_out)
-        plt.savefig(self.folder_dir / f'{params.name}_expected_data_out.png')
 
+        fft_out = self.calc_fft(norm_data_out)
         expected_fft_out = self.calc_fft(norm_expected_data_out)
-        plt.clf()
-        plt.plot(expected_fft_out)
-        plt.savefig(self.folder_dir / f'{params.name}_expected_data_out_fft.png')
+
+        self.save_data(params.data, f'data_in', params.name, fs=params.fs)
+        self.save_data(norm_data_out, f'data_out', params.name, fs=params.fs*params.rate)
+        self.save_data(fft_out, f'fft_out', params.name, fs=params.fs)
+        self.save_plot(norm_expected_data_out, 'expected_data_out.png', params.name)
+        self.save_plot(expected_fft_out, 'expected_fft_out.png', params.name)
 
         self.check_sin(
             norm_data_out,
             params.fc,
-            fs=8e3*params.rate,
+            fs=params.fs*params.rate,
             fc_band=300,
         )
 
