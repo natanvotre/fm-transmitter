@@ -20,7 +20,7 @@ module cic_interpolator #(
 
     wire [WIDTH+max_bit_gain-1:0] data_in_ext;
     sign_extend #(WIDTH, WIDTH+max_bit_gain)
-        extend_data_in (.data_in(data_in), .data_out(data_in_ext));
+        extend_data_in (data_in, data_in_ext);
 
     // Create a pipeline of differentiators
     reg [WIDTH+max_bit_gain-1:0] differentiator_reg [0:N-1];

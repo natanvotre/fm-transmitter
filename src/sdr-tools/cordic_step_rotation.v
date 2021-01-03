@@ -95,17 +95,13 @@ module cordic_step_rotation #(
 
     // 2^{-i} \cdot x_i
     wire [WIDTH-1:0] xi_shifted;
-    sign_extend #(WIDTH-I, WIDTH) extend_xi (
-        .data_in(xi[WIDTH-1:I]),
-        .data_out(xi_shifted)
-    );
+    sign_extend #(WIDTH-I, WIDTH)
+        extend_xi (xi[WIDTH-1:I], xi_shifted);
 
     // 2^{-i} \cdot y_i
     wire [WIDTH-1:0] yi_shifted;
-    sign_extend #(WIDTH-I, WIDTH) extend_yi (
-        .data_in(yi[WIDTH-1:I]),
-        .data_out(yi_shifted)
-    );
+    sign_extend #(WIDTH-I, WIDTH)
+        extend_yi (yi[WIDTH-1:I], yi_shifted);
 
     // - m \sigma_i \cdot 2^{-i} \cdot y_i
     wire [WIDTH-1:0] xi_delta = (M==0) ? 0 :
