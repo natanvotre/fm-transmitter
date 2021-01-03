@@ -381,7 +381,7 @@ class TestCordic(BaseSignalTest):
         self.log(f'data_out_diff_norm: {data_out_diff_norm}')
         self.log(f'z_out_diff_norm: {z_out_diff_norm}')
 
-        assert max(np.abs(data_out_diff)) < max_error
-        assert max(np.abs(z_out_diff)) < max_error
+        assert max(np.abs(data_out_diff)) <= max_error
+        assert max(np.abs(z_out_diff)) <= max_error
         assert max(np.abs(data_out_diff_norm)) < norm_max_error
         assert max(np.abs(z_out_diff_norm)) < norm_max_error
