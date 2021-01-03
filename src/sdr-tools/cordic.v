@@ -24,8 +24,8 @@ module cordic #(
 
     wire [WIDTH:0] xi_ext, yi_ext;
     wire [ZWIDTH:0] zi_ext;
-    sign_extend #(WIDTH, WIDTH+1) extend_xi ( .data_in(xi), .data_out(xi_ext) );
-    sign_extend #(WIDTH, WIDTH+1) extend_yi ( .data_in(yi), .data_out(yi_ext) );
+    sign_extend #(WIDTH, WIDTH+1) extend_xi (xi, xi_ext);
+    sign_extend #(WIDTH, WIDTH+1) extend_yi (yi, yi_ext);
 
     wire is_right_quadrant = (MODE == 0) ?
         (zi[ZWIDTH-1] == zi[ZWIDTH-2]) : ~xi[WIDTH-1];
@@ -86,9 +86,8 @@ module cordic #(
     endgenerate
 
     wire [ZWIDTH-1:0] zo_ext;
-    sign_extend #(ZWIDTH-1, ZWIDTH) extend_zo (
-        .data_in(zi_pipe[PIPE-1][ZWIDTH-2:0]), .data_out(zo_ext)
-    );
+    sign_extend #(ZWIDTH-1, ZWIDTH)
+        extend_zo (zi_pipe[PIPE-1][ZWIDTH-2:0], zo_ext);
 
     assign xo = xi_pipe[PIPE-1][WIDTH:1];
     assign yo = yi_pipe[PIPE-1][WIDTH:1];

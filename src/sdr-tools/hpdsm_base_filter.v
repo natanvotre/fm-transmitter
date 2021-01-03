@@ -8,7 +8,7 @@ module hpdsm_base_filter #( parameter WIDTH=16 ) (
 
     wire [WIDTH-1:0] xi_sr_ext;
     sign_extend #(WIDTH-1, WIDTH)
-        extend_input (.data_in(xi[WIDTH-1:1]), .data_out(xi_sr_ext));
+        extend_input (xi[WIDTH-1:1], xi_sr_ext);
 
     reg [WIDTH-1:0] yo_reg;
     always @(posedge clk)
