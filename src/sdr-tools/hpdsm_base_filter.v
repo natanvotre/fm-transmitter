@@ -1,6 +1,4 @@
-module hpdsm_base_filter #(
-    WIDTH=16
-) (
+module hpdsm_base_filter #( parameter WIDTH=16 ) (
     input clk,
     input rst,
 
@@ -10,19 +8,15 @@ module hpdsm_base_filter #(
 
     wire [WIDTH-1:0] xi_sr_ext;
     sign_extend #(WIDTH-1, WIDTH)
-        extend_input (xi[WIDTH-1:1], xi_sr_ext);
-
+        extend_input (.data_in(xi[WIDTH-1:1]), .data_out(xi_sr_ext));
 
     reg [WIDTH-1:0] yo_reg;
     always @(posedge clk)
         if (rst)
-        begin
             yo_reg <= 0;
-        end
-        else begin
-            yo_reg <= xi_sr_ext + yo_reg;
-        end
+        else
+            yo_reg <= yo;
 
-    assign yo = yo_reg;
+    assign yo = xi_sr_ext - yo_reg;
 
 endmodule
