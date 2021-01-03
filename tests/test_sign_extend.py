@@ -5,11 +5,8 @@ from dataclasses import dataclass
 
 import pytest
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge, NextTimeStep, Event,Timer
-from cocotb.binary import BinaryValue, BinaryRepresentation
+from cocotb.triggers import Timer
 from cocotb.handle import ModifiableObject, HierarchyObject
-from cocotb.monitors import Monitor
 
 from tests.utils import BaseSignalTest
 

@@ -4,7 +4,6 @@ import numpy as np
 import os
 from dataclasses import dataclass
 from numpy import ndarray
-from typing import List
 
 import pytest
 import cocotb
@@ -12,7 +11,7 @@ from cocotb.clock import Clock
 from cocotb.handle import ModifiableObject, HierarchyObject
 from cocotb.triggers import FallingEdge
 
-from tests.utils import BaseSignalTest, results_dir
+from tests.utils import BaseSignalTest
 
 
 @cocotb.test(skip = False)
