@@ -7,6 +7,7 @@ module cic_gain_bank #(
     input [WIDTH+MAX_BIT_GAIN-1:0] data_in,
     output [WIDTH-1:0] data_out
 );
+    // N \log_{2}(RM)
     function [4:0] bit_gain;
         input [7:0] rate;
         case(rate)
