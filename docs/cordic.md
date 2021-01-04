@@ -101,17 +101,17 @@ The math showed can be generalized to not just circular rotation but to
 a bunch of other calculi. This table show all the possible ways we could
 levarage CORDIC to calculate
 
-| $m$ | Rotation mode | Vectoring mode |
-|--|----|---|
-| 1 |  $x_n = K(x_0\cos w_0 + y_0\sin w_0 )$ | $x_n = K\sqrt{x_0^2+y_0^2}$
-| 1 |  $y_n = K(y_0\cos w_0 -  y_0\sin w_0 ) $ | $y_n = 0$
-| 1 |  $w_n = 0$  | $w_n = w_0 + \tan^{-1}(y_0/x_0)$
-| 0 |  $x_n = x_0$ | $x_n = x_0 $
-| 0 |  $y_n = y_0 + x_0 \cdot w_0 $ | $y_n = 0$
-| 0 |  $w_n = 0$  | $w_n = w_0 + y_0/x_0$
-| -1 |  $x_n = K(x_0\cosh w_0 + y_0\sinh w_0 )$ | $x_n = K\sqrt{x_0^2+y_0^2}$
-| -1 |  $y_n = K(y_0\cosh w_0 -  y_0\sinh w_0 ) $ | $y_n = 0$
-| -1 |  $w_n = 0$  | $w_n = w_0 + \tanh^{-1}(y_0/x_0)$
+| $m$ | Rotation mode                             | Vectoring mode                    |
+|-----|-------------------------------------------|-----------------------------------|
+| 1   | $x_n = K(x_0\cos w_0 + y_0\sin w_0 )$     | $x_n = K\sqrt{x_0^2+y_0^2}$       |
+| 1   | $y_n = K(y_0\cos w_0 -  y_0\sin w_0 ) $   | $y_n = 0$                         |
+| 1   | $w_n = 0$                                 | $w_n = w_0 + \tan^{-1}(y_0/x_0)$  |
+| 0   | $x_n = x_0$                               | $x_n = x_0 $                      |
+| 0   | $y_n = y_0 + x_0 \cdot w_0 $              | $y_n = 0$                         |
+| 0   | $w_n = 0$                                 | $w_n = w_0 + y_0/x_0$             |
+| -1  | $x_n = K(x_0\cosh w_0 + y_0\sinh w_0 )$   | $x_n = K\sqrt{x_0^2+y_0^2}$       |
+| -1  | $y_n = K(y_0\cosh w_0 -  y_0\sinh w_0 ) $ | $y_n = 0$                         |
+| -1  | $w_n = 0$                                 | $w_n = w_0 + \tanh^{-1}(y_0/x_0)$ |
 
 and
 
