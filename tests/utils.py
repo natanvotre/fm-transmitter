@@ -141,15 +141,35 @@ class BaseSignalTest(BaseTest):
         data_norm = self.generate_norm_sin(size, fc, fs)
         return (data_norm*(2**(width-1)-1)).astype(int).tolist()
 
-    def calc_fft(self, data: ndarray):
-        len_data = len(data)
+    def calc_fft(self, data: ndarray, N=None, is_complex=False):
+        if N is None:
+            N = len(data)
+
         self.log(f'data shape: {data.shape}')
-        windowed_data = data * np.hanning(len_data)
-        return 20*np.log10(
+        windowed_data = data * np.hanning(len(data))
+        result = 20*np.log10(
             np.abs(
-                np.fft.fft(windowed_data)
-            )[:int(len_data/2)] / len_data
+                np.fft.fft(windowed_data, N)
+            ) / N
         )
+        if is_complex:
+            data = np.zeros(N)
+            data[:int(N/2)] = result[int(N/2):]
+            data[int(N/2):] = result[:int(N/2)]
+            return data
+
+        return result[:int(N/2)]
+
+    def show_fft(self, data: ndarray, fs=48e3, N=None, is_complex=False):
+        if N is None:
+            N = len(data)
+        if is_complex:
+            f = np.linspace(-fs/2, fs/2, N)
+        else:
+            f = np.linspace(0, fs/2, int(N/2))
+        fft = self.calc_fft(data, N, is_complex)
+        plt.plot(f, fft)
+        plt.show()
 
     def save_plot(self, data, name, test_name):
         test_dir: Path = self.folder_dir / test_name
