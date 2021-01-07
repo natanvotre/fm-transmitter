@@ -189,16 +189,18 @@ class BaseSignalTest(BaseTest):
         self.save_wav_data(data, f'{name}.wav', test_name, fs)
         self.save_plot(data, f'{name}.png', test_name)
 
-    def check_sin(self, data: ndarray, fc: float, fc_band=200, fs=8e3, snr=30):
-        len_data = len(data)
-        len_fft = int(len(data)/2)
+    def check_sin(self, data: ndarray, fc: float, fc_band=200, fs=8e3, snr=30, N=None):
+        if N is None:
+            N = len(data)
 
-        windowed_data = data * np.hanning(len_data)
-        fft_data: ndarray = np.abs(np.fft.fft(windowed_data))[:len_fft]
+        half_N = int(N/2)
+
+        windowed_data = data * np.hanning(len(data))
+        fft_data: ndarray = np.abs(np.fft.fft(windowed_data, N))[:half_N]
         half_fs = fs/2
 
-        fc_bin = fc*len_fft/half_fs
-        half_bw_bin = fc_band*len_fft/(2*half_fs)
+        fc_bin = fc*half_N/half_fs
+        half_bw_bin = fc_band*half_N/(2*half_fs)
         bw_low_bin = int(np.floor(fc_bin-half_bw_bin))
         bw_high_bin = int(np.ceil(fc_bin+half_bw_bin))
         self.log(f'fc BW bins: {(bw_low_bin, bw_high_bin)}')
@@ -241,3 +243,68 @@ class BaseSignalTest(BaseTest):
 
         diff_abs = np.abs(clipped_out - clipped_in)
         assert max(diff_abs) < max_diff_db
+
+class BaseSdrTest(BaseSignalTest):
+
+    def interpolate(self, data: np.ndarray, rate: int):
+        len_data = len(data)
+        fft = np.fft.fft(data)
+        half_len = int(len_data/2)
+
+        interp_len = rate*len_data
+        interp_fft_i:ndarray = np.zeros((interp_len,))
+        interp_fft_q:ndarray = np.zeros((interp_len,))
+        interp_fft_i[:half_len] = fft.real[:half_len]
+        interp_fft_q[:half_len] = fft.imag[:half_len]
+        interp_fft_i[interp_len-half_len:] = fft.real[half_len:]
+        interp_fft_q[interp_len-half_len:] = fft.imag[half_len:]
+        interp_fft = (interp_fft_i + 1j*interp_fft_q)*rate
+
+        return np.fft.ifft(interp_fft).real
+
+    def decimate(self, data: np.ndarray, rate: int):
+        len_data = len(data)
+        fft = np.fft.fft(data)
+
+        decim_len = int(len_data/rate)
+        half_len = int(decim_len/2)
+        decim_fft_i:ndarray = np.zeros((decim_len,))
+        decim_fft_q:ndarray = np.zeros((decim_len,))
+        decim_fft_i[:half_len] = fft.real[:half_len]
+        decim_fft_q[:half_len] = fft.imag[:half_len]
+        decim_fft_i[half_len:] = fft.real[len_data-half_len:]
+        decim_fft_q[half_len:] = fft.imag[len_data-half_len:]
+        decim_fft = (decim_fft_i + 1j*decim_fft_q)/rate
+
+        return np.fft.ifft(decim_fft)
+
+
+if __name__ == "__main__":
+    N = 10000
+    n = np.linspace(0, N-1, N)
+
+    fi = 4e3
+    fs = 200e3
+    rate = 10
+    fs_o = fs/rate
+
+    di = np.sin(2*np.pi*fi/fs*n)
+    do_e = np.sin(2*np.pi*fi/fs_o*n)
+    base = BaseSdrTest()
+    do = base.decimate(di, rate)
+
+    base.show_fft(do, fs_o, N, True)
+    base.check_sin(do, fi, 400, fs_o, 60, N)
+
+    fi = 4e3
+    fs = 20e3
+    rate = 10
+    fs_o = fs*rate
+
+    di = np.sin(2*np.pi*fi/fs*n)
+    do_e = np.sin(2*np.pi*fi/fs_o*n)
+    base = BaseSdrTest()
+    do = base.interpolate(di, rate)
+
+    base.show_fft(do, fs_o, N, True)
+    base.check_sin(do_e, fi, 1000, fs_o, 60, N)
