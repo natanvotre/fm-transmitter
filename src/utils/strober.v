@@ -17,12 +17,12 @@ module strober #(parameter WIDTH=8) (
             stb_reg <= 0;
         end
         else begin
-            stb_reg <= strobe;
-
             if (strobe)
                 counter <= 0;
             else
                 counter <= counter + 1;
+
+            stb_reg <= strobe;
         end
 
     assign stb_out = stb_reg;

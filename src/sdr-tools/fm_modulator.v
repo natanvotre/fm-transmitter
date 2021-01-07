@@ -1,5 +1,6 @@
 module fm_modulator #(
     parameter WIDTH = 16,
+    parameter FCLK = 48000000,
     parameter FS_IN = 48000,
     parameter FS_OUT = 4800000,
     parameter FC_OUT = 1000000,
@@ -16,6 +17,8 @@ module fm_modulator #(
     output [WIDTH-1:0] data_out_q,
     output stb_out
 );
+    wire enable = ~rst;
+
     function integer log2;
         input [31:0] value;
         integer i;
@@ -29,11 +32,19 @@ module fm_modulator #(
     localparam ZIWIDTH = WIDTH+IEXT;
     localparam ISHIFT = log2(FS_OUT/K) - IEXT;
 
-    wire enable = ~rst;
+    localparam ZEXT = 0;
+    localparam ZWIDTH = WIDTH+ZEXT;
 
-    wire [7:0] interp_rate = FS_OUT/FS_IN;
-    wire [WIDTH-1:0] data_interp;
+    localparam CLK_OUT_RATE = FCLK/FS_OUT;
+    localparam STB_WIDTH = log2(CLK_OUT_RATE)+1;
+
     wire stb_cic;
+    wire [STB_WIDTH-1:0] stb_rate = CLK_OUT_RATE;
+    strober #(STB_WIDTH)
+        strobe_out_module (clk, rst, enable, stb_rate, stb_cic);
+
+    wire [WIDTH-1:0] data_interp;
+    wire [7:0] interp_rate = FS_OUT/FS_IN;
     cic_interpolator #(WIDTH)
         interpolate_input (
         .clk(clk),
@@ -58,14 +69,15 @@ module fm_modulator #(
     // w_c[n] = 2*pi*f_c/f_s*n
     // and K_w = K_f/(2*pi)
     wire [ZIWIDTH-1:0] wc = FC_OUT/FS_OUT*2**ZIWIDTH;
-    reg [WIDTH-1:0] wn;
+    reg [ZWIDTH-1:0] wn;
     reg [ZIWIDTH-1:0] wcn;
     reg [ZIWIDTH-1:0] data_integrated;
     wire [ZIWIDTH+ISHIFT-1:0] data_int_ext;
     always @(posedge clk)
         if (rst)
         begin
-            rot_fasor <= 0;
+            wn <= 0;
+            wcn <= 0;
             data_integrated <= 0;
         end
         else if (stb_cic)
@@ -75,7 +87,7 @@ module fm_modulator #(
             // \sum{m[n]}
             data_integrated <= data_integrated + data_interp_ext;
             // w[n] = w_c[n] + K_w*\sum{m[n]}
-            wn <= wcn[ZIWIDTH-1:IEXT] + data_int_ext[ZIWIDTH+ISHIFT-1:IEXT+ISHIFT];
+            wn <= wcn[ZIWIDTH-1:IEXT-ZEXT] + data_int_ext[ZIWIDTH+ISHIFT-1:IEXT+ISHIFT-ZEXT];
         end
 
     // Extend integrated signal to create K_w*\sum{m[n]}
@@ -88,14 +100,14 @@ module fm_modulator #(
     wire [WIDTH-1:0] cordic_xo, cordic_yo;
     cordic #(
         .WIDTH(WIDTH),
-        .ZWIDTH(WIDTH),
-        .PIPE(WIDTH+1),
+        .ZWIDTH(ZWIDTH),
+        .PIPE(WIDTH+2),
         .M(1), .MODE(0) // Circular Rotation
     ) cordic_fm_mod (
         .clk(clk), .rst(rst),
 
         .xi(xi), .yi(yi), .zi(wn),
-        .stb_in(stb_in),
+        .stb_in(stb_cic),
 
         .xo(cordic_xo), .yo(cordic_yo), .zo(),
         .stb_out(stb_cordic)

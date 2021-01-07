@@ -6,7 +6,13 @@ module sign_extend #(
     input [LENGTH_IN-1:0] data_in,
     output [LENGTH_OUT-1:0] data_out
 );
+    localparam integer LENGTH_DIFF = LENGTH_OUT - LENGTH_IN;
 
-    assign data_out = {{(LENGTH_OUT-LENGTH_IN){data_in[LENGTH_IN-1]}},data_in};
+    generate
+        if (LENGTH_DIFF > 0)
+            assign data_out = {{LENGTH_DIFF{data_in[LENGTH_IN-1]}}, data_in};
+        else
+            assign data_out = data_in[LENGTH_IN-1:-LENGTH_DIFF];
+    endgenerate
 
 endmodule
