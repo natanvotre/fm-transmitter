@@ -12,7 +12,7 @@ module sign_extend #(
         if (LENGTH_DIFF > 0)
             assign data_out = {{LENGTH_DIFF{data_in[LENGTH_IN-1]}}, data_in};
         else
-            assign data_out = data_in[LENGTH_IN-1:-LENGTH_DIFF];
+            assign data_out = data_in[LENGTH_OUT-1:0];
     endgenerate
 
 endmodule
