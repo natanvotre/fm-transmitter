@@ -26,6 +26,7 @@ module fm_modulator #(
         log2 = 0;
         for(i = 0; 2**i < value; i = i + 1)
             log2 = i + 1;
+        log2 = log2 + 1;
     end
     endfunction
 
