@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import ndarray
 from pathlib import Path
+from numpy.lib.type_check import iscomplex
 from scipy.io import wavfile
 from stringcase import titlecase, snakecase
 
@@ -145,7 +146,6 @@ class BaseSignalTest(BaseTest):
         if N is None:
             N = len(data)
 
-        self.log(f'data shape: {data.shape}')
         windowed_data = data * np.hanning(len(data))
         result = 20*np.log10(
             np.abs(
@@ -160,7 +160,7 @@ class BaseSignalTest(BaseTest):
 
         return result[:int(N/2)]
 
-    def show_fft(self, data: ndarray, fs=48e3, N=None, is_complex=False):
+    def show_fft(self, data: ndarray, fs=48e3, N=None, is_complex=False, show=True, name=None):
         if N is None:
             N = len(data)
         if is_complex:
@@ -168,8 +168,12 @@ class BaseSignalTest(BaseTest):
         else:
             f = np.linspace(0, fs/2, int(N/2))
         fft = self.calc_fft(data, N, is_complex)
+        plt.clf()
         plt.plot(f, fft)
-        plt.show()
+        if show:
+            plt.show()
+        else:
+            plt.savefig(name)
 
     def save_plot(self, data, name, test_name):
         test_dir: Path = self.folder_dir / test_name
@@ -188,6 +192,14 @@ class BaseSignalTest(BaseTest):
     def save_data(self, data, name, test_name, fs=8000):
         self.save_wav_data(data, f'{name}.wav', test_name, fs)
         self.save_plot(data, f'{name}.png', test_name)
+
+    def save_fft_data(self, data, name, test_name, fs, N=None, is_complex=False):
+        fft = self.calc_fft(data, N, iscomplex)
+        self.save_wav_data(fft, f'{name}.wav', test_name, 8e3)
+        test_dir: Path = self.folder_dir / test_name
+        test_dir.mkdir(exist_ok=True)
+        output_file = test_dir / f'{name}.png'
+        self.show_fft(data, fs, N, is_complex, show=False, name=output_file)
 
     def check_sin(self, data: ndarray, fc: float, fc_band=200, fs=8e3, snr=30, N=None):
         if N is None:
@@ -246,65 +258,27 @@ class BaseSignalTest(BaseTest):
 
 class BaseSdrTest(BaseSignalTest):
 
-    def interpolate(self, data: np.ndarray, rate: int):
+    def interpolate(self, data: np.ndarray, rate: int, N=500):
         len_data = len(data)
-        fft = np.fft.fft(data)
-        half_len = int(len_data/2)
 
-        interp_len = rate*len_data
-        interp_fft_i:ndarray = np.zeros((interp_len,))
-        interp_fft_q:ndarray = np.zeros((interp_len,))
-        interp_fft_i[:half_len] = fft.real[:half_len]
-        interp_fft_q[:half_len] = fft.imag[:half_len]
-        interp_fft_i[interp_len-half_len:] = fft.real[half_len:]
-        interp_fft_q[interp_len-half_len:] = fft.imag[half_len:]
-        interp_fft = (interp_fft_i + 1j*interp_fft_q)*rate
+        data_interp = np.zeros((len_data*rate))
+        for i in range(len_data):
+            if i % rate:
+                data_interp[i] = data[int(i/rate)]
 
-        return np.fft.ifft(interp_fft).real
+        n = np.linspace(-N/2, N/2-1, N)
+        filter = np.sinc(n/rate)
 
-    def decimate(self, data: np.ndarray, rate: int):
+        return np.convolve(data_interp, filter, 'same')
+
+    def decimate(self, data: np.ndarray, rate: int, N=500):
         len_data = len(data)
-        fft = np.fft.fft(data)
-
-        decim_len = int(len_data/rate)
-        half_len = int(decim_len/2)
-        decim_fft_i:ndarray = np.zeros((decim_len,))
-        decim_fft_q:ndarray = np.zeros((decim_len,))
-        decim_fft_i[:half_len] = fft.real[:half_len]
-        decim_fft_q[:half_len] = fft.imag[:half_len]
-        decim_fft_i[half_len:] = fft.real[len_data-half_len:]
-        decim_fft_q[half_len:] = fft.imag[len_data-half_len:]
-        decim_fft = (decim_fft_i + 1j*decim_fft_q)/rate
-
-        return np.fft.ifft(decim_fft)
-
-
-if __name__ == "__main__":
-    N = 10000
-    n = np.linspace(0, N-1, N)
-
-    fi = 4e3
-    fs = 200e3
-    rate = 10
-    fs_o = fs/rate
-
-    di = np.sin(2*np.pi*fi/fs*n)
-    do_e = np.sin(2*np.pi*fi/fs_o*n)
-    base = BaseSdrTest()
-    do = base.decimate(di, rate)
-
-    base.show_fft(do, fs_o, N, True)
-    base.check_sin(do, fi, 400, fs_o, 60, N)
-
-    fi = 4e3
-    fs = 20e3
-    rate = 10
-    fs_o = fs*rate
-
-    di = np.sin(2*np.pi*fi/fs*n)
-    do_e = np.sin(2*np.pi*fi/fs_o*n)
-    base = BaseSdrTest()
-    do = base.interpolate(di, rate)
-
-    base.show_fft(do, fs_o, N, True)
-    base.check_sin(do_e, fi, 1000, fs_o, 60, N)
+        n = np.linspace(-N/2, N/2-1, N)
+        filter = 2/rate*np.sinc(n/rate)*np.hanning(N)
+        data_out = np.convolve(data, filter, 'same')
+        if len_data < len(filter):
+            data_out = data_out[int((N-len_data)/2):int((N+len_data)/2)]
+        data_decim = data_out[
+            np.array([(i % rate)==0 for i in range(len(data_out))])
+        ]
+        return data_decim

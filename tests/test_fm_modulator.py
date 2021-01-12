@@ -11,7 +11,7 @@ from cocotb.clock import Clock
 from cocotb.handle import ModifiableObject, HierarchyObject
 from cocotb.triggers import FallingEdge
 
-from tests.utils import BaseSignalTest
+from tests.utils import BaseSdrTest
 
 
 @cocotb.test(skip = False)
@@ -77,21 +77,22 @@ class TestingParameters:
 
 
 def generate_values():
-    widths = [16]
-    sizes = [100]
-    sin_fcs = [4e3]
-    fs = [48e3]
-    rates = [100]
-    k = [100e3]
-    fcs = [0.5e6]
-    fclk = [48e3*2*100]
-    iexts = [10]
+    widths = [16, 24]
+    sizes = [100, 100]
+    sin_fcs = [4e3, 4e3]
+    fs = [48e3, 48e3]
+    rates = [100, 100]
+    k = [200e3, 200e3]
+    fcs = [0.5e6, 0.5e6]
+    out_clks = [2, 2]
+    fclks = [fs*r*oc for fs, r, oc in zip(fs, rates, out_clks)]
+    iexts = [10, 10]
     data = [
-        BaseSignalTest().generate_norm_sin(s,f,fs)
+        BaseSdrTest().generate_norm_sin(s, f, fs)
         for s, f, fs in zip(sizes, sin_fcs, fs)
     ]
     names = [
-        f'test_sin_{f/1e3:.2f}kHz_{s}S_{r}R_{w}b'
+        f'test_sin_{f/1e3:.0f}kHz_{s}S_{r}R_{w}b'
         for w, s, r, f in zip(widths, sizes, rates, fcs)
     ]
 
@@ -99,14 +100,14 @@ def generate_values():
         values for values in zip(
             data, widths, sin_fcs,
             fs, rates,
-            k, fcs, fclk,
+            k, fcs, fclks,
             iexts,
             names,
         )
     ]
 
 
-class TestFmModulator(BaseSignalTest):
+class TestFmModulator(BaseSdrTest):
     dut: FmModulator = None
     params: TestingParameters = None
     data_in: ndarray = None
@@ -244,93 +245,83 @@ class TestFmModulator(BaseSignalTest):
         params = self.params
 
         max_value:int = 2**(params.WIDTH-1)
-        norm_data_in = self.data_in/max_value
-        data_int = self.interpolate(self.data_in/max_value, params.rate)
         norm_data_out = self.data_out/max_value
 
-        # self.log(f'data_out: {self.data_out}')
-        # plt.plot(data_int)
-        # plt.plot(norm_data_out.real)
-        # plt.plot(norm_data_out.imag)
-        # plt.show()
+        demod_signal = self.demodulate(
+            norm_data_out,
+            params.FC_OUT,
+            params.FS_OUT,
+            save=True,
+        )
 
-        demod_signal = self.demodulate(norm_data_out)
-        plt.plot(demod_signal)
-        plt.show()
+        self.check_sin(demod_signal, params.fc, 400, params.FS_IN, snr=20)
 
-        self.show_fft(demod_signal, fs=params.FS_OUT, N=10000)
-        assert False
+    def find_mmc(self):
+        params = self.params
 
-        # expected_data_out = self.interpolate(self.data_in, params.rate)
-        # norm_expected_data_out = expected_data_out/max_value
+        epsilon = 1e-3
+        best = 0
+        for i in range(1,int(params.rate/2)):
+            div = params.rate/i
+            f_int = params.FS_OUT/i
+            if f_int <= params.K:
+                break
 
-        # fft_out = self.calc_fft(norm_data_out)
-        # expected_fft_out = self.calc_fft(norm_expected_data_out)
+            if abs(int(div) - div) < epsilon:
+                best = i
 
-        # self.save_data(params.data, f'data_in', params.name, fs=params.fs)
-        # self.save_data(norm_data_out, f'data_out', params.name, fs=params.fs*params.rate)
-        # self.save_data(fft_out, f'fft_out', params.name, fs=params.fs)
-        # self.save_plot(norm_expected_data_out, 'expected_data_out.png', params.name)
-        # self.save_plot(expected_fft_out, 'expected_fft_out.png', params.name)
+        return best
 
-        # self.check_sin(
-        #     norm_data_out,
-        #     params.fc,
-        #     fs=params.fs*params.rate,
-        #     fc_band=300,
-        # )
 
-    def interpolate(self, data: np.ndarray, rate: int):
-        len_data = len(data)
-        fft = np.fft.fft(data)
-        half_len = int(len_data/2)
-
-        interp_len = rate*len_data
-        interp_fft = np.zeros((interp_len,))
-        interp_fft[:half_len] = fft.real[:half_len] + 1j*fft.imag[:half_len]
-        interp_fft[interp_len-half_len:] = fft[half_len:] + 1j*fft.imag[half_len:]
-        interp_fft = interp_fft*rate
-
-        return np.fft.ifft(interp_fft).real
-
-    def decimate(self, data: np.ndarray, rate: int):
-        len_data = len(data)
-        fft = np.fft.fft(data)
-
-        decim_len = int(len_data/rate)
-        half_len = int(decim_len/2)
-
-        interp_fft = np.zeros((decim_len,))
-        interp_fft[:half_len] = fft.real[:half_len] + 1j*fft.imag[:half_len]
-        interp_fft[half_len:] = fft[len_data-half_len:] + 1j*fft.imag[len_data-half_len:]
-        interp_fft = interp_fft/rate
-
-        return np.fft.ifft(interp_fft)
-
-    def demodulate(self, data: ndarray):
+    def demodulate(self, data: ndarray, fc: float, fs: float, save=True):
         params = self.params
 
         len_data = len(self.data_out)
         n = np.linspace(0,len_data-1,len_data)
 
-        fc_base = params.FC_OUT
-        # rate_div =
-        based_signal = data*np.exp(-1j*2*np.pi*fc_base/params.FS_OUT*n)
-        self.show_fft(based_signal, params.FS_OUT, is_complex=True)
-        decim_signal = self.decimate(based_signal, params.rate/10)
-        len_data_dec = len(decim_signal)
-        self.show_fft(decim_signal, params.FS_OUT/(params.rate/10), is_complex=True)
+        rate_int = self.find_mmc()
+        rate_out = int(params.rate/rate_int)
+        self.log(f'[Demodulate] rate int: {rate_int}')
+        self.log(f'[Demodulate] rate out: {rate_out}')
+        based_signal = data*np.exp(-1j*2*np.pi*fc/fs*n)
 
-        message_integrated = np.arctan(decim_signal.imag/decim_signal.real)
-        plt.plot(message_integrated)
-        plt.show()
+        decim_signal = self.decimate(based_signal, rate_int)
+        len_data_dec = len(decim_signal)
+
+        message_integrated = np.arctan(decim_signal.imag/decim_signal.real).real
+
         demod_signal = np.zeros(len_data_dec)
         for i in range(len_data_dec-1):
             demod_signal[i+1] = message_integrated[i+1]-message_integrated[i]
             if abs(demod_signal[i+1]) > np.pi/2:
                 demod_signal[i+1] -= np.sign(demod_signal[i+1])*np.pi
-        plt.plot(demod_signal)
-        plt.show()
-        demod_signal_dec = self.decimate(demod_signal, 10)
+
+        demod_signal_dec = self.decimate(demod_signal, rate_out)
+
+        if save:
+            self.save_fft_data(
+                based_signal, 'fft_signal_modulated',
+                params.name, fs, is_complex=True
+            )
+            self.save_fft_data(
+                decim_signal, 'fft_modulated_partial_decimated',
+                params.name, fs/rate_int, is_complex=True,
+            )
+            self.save_data(
+                message_integrated, 'msg_integrated_partial_decimated',
+                params.name, 48e3
+            )
+            self.save_data(
+                demod_signal, 'demod_signal_partial_decimated',
+                params.name, 48e3,
+            )
+            self.save_data(
+                demod_signal_dec, 'demod_signal_decimated',
+                params.name, fs/params.rate,
+            )
+            self.save_fft_data(
+                demod_signal_dec, 'fft_signal_demodulated',
+                params.name, fs/params.rate, len(demod_signal_dec)*20
+            )
 
         return demod_signal_dec
