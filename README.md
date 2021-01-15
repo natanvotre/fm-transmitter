@@ -25,8 +25,8 @@ transmitter just using an FPGA and everything that an FPGA can get.
   CORDIC).
   - [x] Implement and test a CORDIC algorithm
   - [x] Make sure it is possible to shift in frequency complex signals
-- [ ] Create and test an HPSDM (High-Pass Sigma-Delta Modulator)
-- [ ] Create and test a FM modulator in medium fs
+- [x] Create and test an HPSDM (High-Pass Sigma-Delta Modulator)
+- [ ] Create and test an FM modulator in medium fs
 - [ ] Create and test a DUC chain using the developed modules
 - [ ] Test the FM transmitter on-board.
 
@@ -49,11 +49,12 @@ transmitter just using an FPGA and everything that an FPGA can get.
   - [x] Cic interpolator
   - [x] Up-converter
   - [ ] FM modulator
-- [ ] AD/DA $\Sigma\Delta$ modulators
+- [ ] AD $\Sigma\Delta$ modulator
+- [x] DA $\Sigma\Delta$ modulator
 
 # Aiming New Features
 
-- [ ] Use a LPSDM (Low-Pass Sigma-Delta Modulator) instead of using the built-in ADC from Max10.
+- [ ] Use an LPSDM (Low-Pass Sigma-Delta Modulator) instead of using the built-in ADC from Max10.
 
 # Testing
 
@@ -98,9 +99,13 @@ Currently, there are tests for:
 - [x] [cordic](src/sdr-tools/cordic.v)
   - Test random complex input values (100 for each testcase) with random
     values and angles, including random rotational angles.
-      - Assert the whether the pipeline has the actual depth
+      - Assert whether the pipeline has the actual depth
       - Assert the circular rotation mode is working with the expected
         values, checking if the data was precise, error value less than
         5.
       - Assert the circular vectoring mode is working with the same
         approach.
+- [x] [hpdsm](src/delta-sigma/hpdsm.v)
+  - Test input sinusoids with different widths and frequencies
+    - Assert whether the output contains the sinusoid
+    - Check if around the pass-band the noise is low
