@@ -69,7 +69,7 @@ module fm_modulator #(
     // where w[n] = w_c[n] + K_w*\sum{m[n]}
     // w_c[n] = 2*pi*f_c/f_s*n
     // and K_w = K_f/(2*pi)
-    wire [ZIWIDTH-1:0] wc = FC_OUT/FS_OUT*2**ZIWIDTH;
+    wire [ZIWIDTH-1:0] wc = FC_OUT/FS_OUT*{1'b1, {ZIWIDTH{1'b0}}};
     reg [ZWIDTH-1:0] wn;
     reg [ZIWIDTH-1:0] wcn;
     reg [ZIWIDTH-1:0] data_integrated;
