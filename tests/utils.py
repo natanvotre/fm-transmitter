@@ -144,7 +144,7 @@ class BaseSignalTest(BaseTest):
 
     def calc_fft(self, data: ndarray, N=None, is_complex=False):
         if N is None:
-            N = len(data)
+            N = int(len(data)/2)*2
 
         windowed_data = data * np.hanning(len(data))
         result = 20*np.log10(
@@ -162,7 +162,7 @@ class BaseSignalTest(BaseTest):
 
     def show_fft(self, data: ndarray, fs=48e3, N=None, is_complex=False, show=True, name=None):
         if N is None:
-            N = len(data)
+            N = int(len(data)/2)*2
         if is_complex:
             f = np.linspace(-fs/2, fs/2, N)
         else:
@@ -180,13 +180,19 @@ class BaseSignalTest(BaseTest):
         test_dir.mkdir(exist_ok=True)
         output_file = test_dir / name
         plt.clf()
-        plt.plot(data)
+        if np.iscomplex(data).any():
+            plt.plot(data.real)
+            plt.plot(data.imag)
+        else:
+            plt.plot(data)
         plt.savefig(output_file)
 
-    def save_wav_data(self, data, name, test_name, fs=8000):
+    def save_wav_data(self, data:ndarray, name, test_name, fs=8000):
         test_dir: Path = self.folder_dir / test_name
         test_dir.mkdir(exist_ok=True)
         output_file = test_dir / name
+        if np.iscomplex(data).any():
+            data = np.array([data.real, data.imag])
         wavfile.write(str(output_file), int(fs), data)
 
     def save_data(self, data, name, test_name, fs=8000):
@@ -194,7 +200,7 @@ class BaseSignalTest(BaseTest):
         self.save_plot(data, f'{name}.png', test_name)
 
     def save_fft_data(self, data, name, test_name, fs, N=None, is_complex=False):
-        fft = self.calc_fft(data, N, iscomplex)
+        fft = self.calc_fft(data, N, is_complex)
         self.save_wav_data(fft, f'{name}.wav', test_name, 8e3)
         test_dir: Path = self.folder_dir / test_name
         test_dir.mkdir(exist_ok=True)
