@@ -77,23 +77,23 @@ class TestingParameters:
 
 
 def generate_values():
-    widths = [16, 24]
-    sizes = [100, 100]
-    sin_fcs = [4e3, 4e3]
-    fs = [48e3, 48e3]
-    rates = [100, 100]
-    k = [200e3, 200e3]
-    fcs = [0.5e6, 0.5e6]
-    out_clks = [2, 2]
+    widths = [16, 25, 25]
+    sizes = [100, 100, 100]
+    sin_fcs = [4e3, 10e3, 1e3]
+    fs = [48e3, 40e3, 48e3]
+    rates = [100, 50, 100]
+    k = [200e3, 200e3, 100e3]
+    fcs = [0.5e6, 0.5e6, 2e6]
+    out_clks = [2, 2, 2]
+    iexts = [10, 10, 7]
     fclks = [fs*r*oc for fs, r, oc in zip(fs, rates, out_clks)]
-    iexts = [10, 10]
     data = [
         BaseSdrTest().generate_norm_sin(s, f, fs)
         for s, f, fs in zip(sizes, sin_fcs, fs)
     ]
     names = [
-        f'test_sin_{f/1e3:.0f}kHz_{s}S_{r}R_{w}b'
-        for w, s, r, f in zip(widths, sizes, rates, fcs)
+        f'test_sin_{f/1e3:.0f}kHz_k{k/1e3:.0f}kHz_{s}S_{r}R_{w}b_{iext}ext'
+        for w, s, r, f, iext, k in zip(widths, sizes, rates, fcs, iexts, k)
     ]
 
     return [
@@ -246,6 +246,15 @@ class TestFmModulator(BaseSdrTest):
 
         max_value:int = 2**(params.WIDTH-1)
         norm_data_out = self.data_out/max_value
+
+        self.save_fft_data(
+            norm_data_out, 'input_fft_data',
+            params.name, params.FS_OUT, is_complex=True
+        )
+        self.save_data(
+            norm_data_out[:100], 'input_data',
+            params.name, params.FS_OUT
+        )
 
         demod_signal = self.demodulate(
             norm_data_out,
