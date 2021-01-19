@@ -1,14 +1,30 @@
 # FM Transmitter
 
-This project aims to create an FM transmitter using just an FPGA.
+This is a work in progress project that aims to create an FM transmitter
+using just an FPGA.
+
+The idea is to build SDR (Signal-Defined Radio) and some signal
+processing modules and send the FM signal through the 1 bit digital output
+from the FPGA.
+
+For that, we are using the Techs:
+
+- [CORDIC](src/sdr-tools/cordic.v) (COordinate Rotation DIgital Computer) algorithm
+- [CIC](src/sdr-tools/cic_interpolator.v) (Cascade Interpolation Comb) filter
+- Sigma-Delta Modulators (currently just high-pass).
+
+Thus, we already built some blocks to implement our FM transmitter:
+
+- [FM Modulator](src/sdr-tools/fm_modulator.v), essential block to
+  modulate the input signal and put it into an intermediate frequency.
+- [DUC](src/sdr-tools/fm_modulator.v) (Digital Up-Converter), block to
+  send the intermediate signal to higher frequencies.
+- [HPDSM](src/delta-sigma/hpdsm.v) (High-Pass Delta-Sigma Modulator)
+  DAC. With such, we are able to send high frequency signals through a
+  1-bit digital output, critical to our needs.
 
 - **Current Documentations**:
   - [CORDIC](docs/cordic.md)
-
-# Goal
-
-Build an FPGA-based Fully Digital FM Transmitter, i.e. create an FM
-transmitter just using an FPGA and everything that an FPGA can get.
 
 ## Block Diagram
 
@@ -53,10 +69,10 @@ transmitter just using an FPGA and everything that an FPGA can get.
   - [x] Cic interpolator
   - Up-converter
     - [x] CORDIC algorithm
-    - [ ] Complete DUC.
+    - [x] Complete DUC.
   - [x] FM modulator
-- [ ] AD $\Sigma\Delta$ modulator
 - [x] DA $\Sigma\Delta$ modulator
+- [ ] AD $\Sigma\Delta$ modulator
 - [ ] FM transmitter
 - [ ] Use an LPSDM (Low-Pass Sigma-Delta Modulator) instead of using the built-in ADC from Max10.
 
