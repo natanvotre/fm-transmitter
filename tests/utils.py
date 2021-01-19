@@ -138,6 +138,11 @@ class BaseSignalTest(BaseTest):
         t = n/fs
         return np.sin(2*np.pi*fc*t)
 
+    def generate_norm_complex_exp(self, size, fc, fs=8e3):
+        n = np.linspace(0, size-1, size)
+        t = n/fs
+        return np.exp(1j*2*np.pi*fc*t)
+
     def generate_sin(self, size, fc, width, fs=8e3):
         data_norm = self.generate_norm_sin(size, fc, fs)
         return (data_norm*(2**(width-1)-1)).astype(int).tolist()
@@ -191,8 +196,8 @@ class BaseSignalTest(BaseTest):
         test_dir: Path = self.folder_dir / test_name
         test_dir.mkdir(exist_ok=True)
         output_file = test_dir / name
-        if np.iscomplex(data).any():
-            data = np.array([data.real, data.imag])
+        if np.iscomplex(data).any() or 'complex' in str(type(data[0])):
+            data = np.array([data.real, data.imag]).transpose()
         wavfile.write(str(output_file), int(fs), data)
 
     def save_data(self, data, name, test_name, fs=8000):
@@ -201,7 +206,7 @@ class BaseSignalTest(BaseTest):
 
     def save_fft_data(self, data, name, test_name, fs, N=None, is_complex=False):
         fft = self.calc_fft(data, N, is_complex)
-        self.save_wav_data(fft, f'{name}.wav', test_name, 8e3)
+        self.save_wav_data(fft/np.max(fft), f'{name}.wav', test_name, 8e3)
         test_dir: Path = self.folder_dir / test_name
         test_dir.mkdir(exist_ok=True)
         output_file = test_dir / f'{name}.png'
