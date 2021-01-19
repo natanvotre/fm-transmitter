@@ -27,7 +27,7 @@ transmitter just using an FPGA and everything that an FPGA can get.
   - [x] Make sure it is possible to shift in frequency complex signals
 - [x] Create and test an HPSDM (High-Pass Delta-Sigma Modulator)
 - [x] Create and test an FM modulator in medium fs
-- [ ] Create and test a DUC chain using the developed modules
+- [x] Create and test a DUC chain using the developed modules
 - [ ] Test high-frequency sinusoid output on-board
 - [ ] Test FM modulation and transmission with no input on-board
 - [ ] test FM transmitter using sinusoidal input
@@ -118,3 +118,8 @@ Currently, there are tests for:
   - Test different intermediate frequency and output sample rates
   - Test different Fm sensibility constant (K)
   - Demodulate the signal, decimate, and check the SNR output signal.
+- [x] [digital up-converter](src/sdr-tools/duc.v) ([test file](tests/test_duc.py))
+  - Test input sinusoids with different widths and frequencies
+  - Test different intermediate frequency and output sample rates
+  - Test with Fs out = Fclk
+  - Check the SNR of the output signal.
