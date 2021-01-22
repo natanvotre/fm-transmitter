@@ -301,7 +301,17 @@ set_global_assignment -name VERILOG_FILE src/sdr-tools/cic_gain_bank.v
 set_global_assignment -name VERILOG_FILE src/sdr-tools/cordic.v
 set_global_assignment -name VERILOG_FILE src/sdr-tools/cordic_step_rotation.v
 
+set_global_assignment -name VERILOG_FILE src/sdr-tools/transmitter.v
+set_global_assignment -name VERILOG_FILE src/sdr-tools/fm_modulator.v
+set_global_assignment -name VERILOG_FILE src/sdr-tools/duc.v
+
+set_global_assignment -name VERILOG_FILE src/delta-sigma/hpdsm.v
+set_global_assignment -name VERILOG_FILE src/delta-sigma/hpdsm_base_filter.v
+
+set_global_assignment -name QIP_FILE src/utils/PLL2.qip
+
 set_global_assignment -name VERILOG_FILE src/utils/sign_extend.v
+set_global_assignment -name VERILOG_FILE src/utils/strober.v
 
 set_global_assignment -name VERILOG_FILE src/utils/LED_METER.v
 set_global_assignment -name VERILOG_FILE src/utils/PEAK_DELAY.v
