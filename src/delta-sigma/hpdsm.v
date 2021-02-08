@@ -6,6 +6,7 @@ module hpdsm #( parameter WIDTH = 16 ) (
 
     output yo
 );
+
     localparam EXT = 4;
     localparam IWIDTH = WIDTH + EXT;
 
