@@ -164,24 +164,10 @@ class TestTransmitter(BaseSdrTest):
 
         plt.plot(self.data)
         plt.show()
-        self.show_fft(self.data, fs=params.FCLK)
 
-        # self.save_fft_data(
-        #     norm_data_in, 'input_fft_data',
-        #     params.name, params.FS_IN, is_complex=True
-        # )
-        # self.save_data(
-        #     norm_data_in[:100], 'input_data',
-        #     params.name, params.FS_IN
-        # )
+        self.save_fft_data(
+            self.data, 'rf_fft_signal',
+            params.name, params.FCLK,
+        )
 
-        # self.save_fft_data(
-        #     norm_data_out, 'output_fft_data',
-        #     params.name, params.FS_OUT, is_complex=True
-        # )
-        # self.save_data(
-        #     norm_data_out[:100], 'output_data',
-        #     params.name, params.FS_OUT
-        # )
-
-        self.check_sin(norm_data_out.real, params.FC_OUT, 200e3, params.FS_OUT, snr=35)
+        self.check_sin(self.data, params.FC, 200e3, params.FCLK, snr=35)

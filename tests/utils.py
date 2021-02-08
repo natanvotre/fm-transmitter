@@ -232,6 +232,7 @@ class BaseSignalTest(BaseTest):
         # Check sin frequency is within the specified bounds
         max_bin = fft_data.argmax()
         self.log(f'max bin: {max_bin}')
+        self.log(f'max frequency: {max_bin/half_N*half_fs}')
         assert bw_low_bin <= max_bin and max_bin <= bw_high_bin
 
         # Check SNR
