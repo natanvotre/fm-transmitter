@@ -65,8 +65,14 @@ module duc #(
         .data_out(data_interp_q), .stb_out(stb_cic)
     );
 
-    localparam CORDIC_2_PI = {1'b1, {ZWIDTH{1'b0}}};
-    wire [ZWIDTH-1:0] wc = FC_OUT/FS_OUT*CORDIC_2_PI - FC_IN/FS_OUT*CORDIC_2_PI;
+    localparam CORDIC_2_PI = 1<<ZWIDTH;
+    wire [ZWIDTH-1:0] wc = ((FC_OUT - FC_IN)*CORDIC_2_PI)/FS_OUT;
+
+    wire_monitoring #("DUC", 10, ZWIDTH) my_wire_monitor (
+        .data_in(wc),
+        .data_out(wco)
+    );
+
     reg [ZWIDTH-1:0] wcn;
     always @(posedge clk)
         if (rst)

@@ -69,7 +69,8 @@ module fm_modulator #(
     // where w[n] = w_c[n] + K_w*\sum{m[n]}
     // w_c[n] = 2*pi*f_c/f_s*n
     // and K_w = K_f/(2*pi)
-    wire [ZIWIDTH-1:0] wc = FC_OUT/FS_OUT*{1'b1, {ZIWIDTH{1'b0}}};
+    localparam CORDIC_2_PI = 1<<ZIWIDTH;
+    wire [ZIWIDTH-1:0] wc = (FC_OUT*CORDIC_2_PI)/FS_OUT;
     reg [ZWIDTH-1:0] wn;
     reg [ZIWIDTH-1:0] wcn;
     reg [ZIWIDTH-1:0] data_integrated;
@@ -90,6 +91,12 @@ module fm_modulator #(
             // w[n] = w_c[n] + K_w*\sum{m[n]}
             wn <= wcn[ZIWIDTH-1:IEXT-ZEXT] + data_int_ext[ZIWIDTH+ISHIFT-1:IEXT+ISHIFT-ZEXT];
         end
+
+
+    wire_monitoring #("WC", 11, ZWIDTH) my_wire_monitor (
+        .data_in(stb_rate),
+        .data_out(wco)
+    );
 
     // Extend integrated signal to create K_w*\sum{m[n]}
     sign_extend #(ZIWIDTH, ZIWIDTH+ISHIFT)

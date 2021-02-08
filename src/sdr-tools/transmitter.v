@@ -1,12 +1,20 @@
 module transmitter #(
-    parameter FCLK = 200000000,
-    parameter FC = 99000000
+    parameter FCLK = 50'd200000000,
+    parameter FS_IN = 50'd48000,
+    parameter RATE_INT = 50'd100,
+    parameter FC = 50'd99000000,
+    parameter K = 50'd200000,
+    parameter IEXT = 7
 ) (
     input clk,
     input rst,
 
-    output rf_out
-    // output [15:0] rf_out
+    input [15:0] data_in,
+    input stb_in,
+
+    output rf_out,
+    // output [15:0] rf_out,
+    output stb_out
 );
     wire enable = ~rst;
 
@@ -22,40 +30,35 @@ module transmitter #(
     endfunction
 
     localparam WIDTH = 16;
-    localparam CLK_IN_RATE = 100;
-    localparam FS_INT = FCLK/CLK_IN_RATE;
-    localparam FS_IN = FS_INT/CLK_IN_RATE;
+    localparam FS_INT = FS_IN*RATE_INT;
     localparam FS_OUT = FCLK;
-    localparam STB_WIDTH = log2(CLK_IN_RATE*CLK_IN_RATE)+1;
     localparam FC_INT = FS_INT/8;
-    wire stb_in;
-    // strober #(STB_WIDTH)
-    //     strober (clk, rst, enable, CLK_IN_RATE*CLK_IN_RATE, stb_in);
 
     wire [WIDTH-1:0] data_fm_i;
     wire [WIDTH-1:0] data_fm_q;
     wire stb_fm;
-    // fm_modulator #(
-    //     .WIDTH(WIDTH),
-    //     .FCLK(FCLK),
-    //     .FS_IN(FS_IN),
-    //     .FS_OUT(FS_INT),
-    //     .FC_OUT(FC_INT),
-    //     .K(),
-    //     .IEXT(10)
-    // ) fm_modulator (
-    //     .clk(clk), .rst(rst),
+    fm_modulator #(
+        .WIDTH(WIDTH),
+        .FCLK(FCLK),
+        .FS_IN(FS_IN),
+        .FS_OUT(FS_INT),
+        .FC_OUT(FC_INT),
+        .K(K),
+        .IEXT(IEXT)
+    ) fm_modulator (
+        .clk(clk), .rst(rst),
 
-    //     .data_in(0),
-    //     .stb_in(stb_in),
+        .data_in(data_in),
+        .stb_in(stb_in),
 
-    //     .data_out_i(data_fm_i),
-    //     .data_out_q(data_fm_q),
-    //     .stb_out(stb_fm)
-    // );
+        .data_out_i(data_fm_i),
+        .data_out_q(data_fm_q),
+        .stb_out(stb_fm)
+    );
 
 
     wire [WIDTH-1:0] duc_data_out;
+    wire duc_stb_out;
     duc #(
         .WIDTH(WIDTH),
         .FCLK(FCLK),
@@ -72,7 +75,7 @@ module transmitter #(
         .stb_in(stb_fm),
         .data_out_i(duc_data_out),
         .data_out_q(),
-        .stb_out()
+        .stb_out(duc_stb_out)
     );
 
     wire dac_out;
@@ -80,6 +83,8 @@ module transmitter #(
         hpdsm (clk, rst, duc_data_out, dac_out);
 
     assign rf_out = dac_out;
+    assign stb_out = duc_stb_out;
+
     // assign rf_out = duc_data_out;
 
 endmodule
