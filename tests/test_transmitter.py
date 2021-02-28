@@ -14,7 +14,7 @@ from cocotb.triggers import FallingEdge
 from tests.utils import BaseSdrTest
 
 
-@cocotb.test(skip = False)
+@cocotb.test(skip=False)
 def init(dut: HierarchyObject):
     """
         Test Fm Interpolator changing the input signal, rate and width
@@ -49,6 +49,7 @@ class TestingParameters:
     FC: int
     data: ndarray
     name: str
+
     def __init__(self):
         self.FC = int(float(os.environ["FC"]))
         self.FCLK = int(float(os.environ["FCLK"]))
@@ -109,7 +110,6 @@ class TestTransmitter(BaseSdrTest):
         clock = Clock(dut.clk, clk_period, units="ns")
         cocotb.fork(clock.start())
 
-
         yield self.initialize_module()
         yield self.rec_data()
 
@@ -161,13 +161,19 @@ class TestTransmitter(BaseSdrTest):
     # Check methods
     def check_sin_results(self):
         params = self.params
-
-        plt.plot(self.data)
-        plt.show()
-
+        fs = params.FCLK
         self.save_fft_data(
             self.data, 'rf_fft_signal',
-            params.name, params.FCLK,
+            params.name, fs,
         )
 
-        self.check_sin(self.data, params.FC, 200e3, params.FCLK, snr=35)
+        n = np.linspace(0, len(self.data)-1, len(self.data))
+        expected_signal = np.sin(2*np.pi*params.FC/fs*n)
+        self.check_signal_integrity(
+            expected_signal,
+            self.data,
+            freq_band=(0.985*fs/2, fs/2),
+            fs=fs,
+            min_db=-40,
+            max_diff_db=0.5
+        )

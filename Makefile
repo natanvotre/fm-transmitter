@@ -16,4 +16,4 @@ send:
 	quartus_pgm --cable=${BOARD} -m JTAG -o p\;${OUTPUT_SOF}
 
 test:
-	pytest -p no:warnings
+	pytest -p no:warnings --workers 2
