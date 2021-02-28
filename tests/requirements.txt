@@ -6,3 +6,4 @@ pyverilog==1.2.1
 scipy==1.6.0
 stringcase==1.2.0
 wheel==0.36.2
+pytest-parallel==0.1.0
