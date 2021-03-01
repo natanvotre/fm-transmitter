@@ -295,7 +295,6 @@ set_global_assignment -name VERILOG_FILE "src/audio-codec/DAC16.v"
 set_global_assignment -name VERILOG_FILE "src/audio-codec/I2S_ASSESS.v"
 set_global_assignment -name VERILOG_FILE "src/audio-codec/MAX10_ADC.v"
 set_global_assignment -name VERILOG_FILE "src/audio-codec/SPI_RAM.v"
-set_global_assignment -name VERILOG_FILE "src/audio-codec/AUDIO_PLL.v"
 set_global_assignment -name QIP_FILE "src/audio-codec/adc_qsys/adc_qsys.qip"
 set_global_assignment -name HEX_FILE V/LOOP.hex
 set_global_assignment -name VERILOG_FILE "src/sdr-tools/cic_interpolator.v"
@@ -307,8 +306,9 @@ set_global_assignment -name VERILOG_FILE "src/sdr-tools/fm_modulator.v"
 set_global_assignment -name VERILOG_FILE "src/sdr-tools/duc.v"
 set_global_assignment -name VERILOG_FILE "src/delta-sigma/hpdsm.v"
 set_global_assignment -name VERILOG_FILE "src/delta-sigma/hpdsm_base_filter.v"
-set_global_assignment -name QIP_FILE src/utils/PLL2.qip
+set_global_assignment -name QIP_FILE src/utils/PLL.qip
 
+set_global_assignment -name VERILOG_FILE src/utils/edge_detector.v
 set_global_assignment -name VERILOG_FILE src/utils/sign_extend.v
 set_global_assignment -name VERILOG_FILE src/utils/strober.v
 
