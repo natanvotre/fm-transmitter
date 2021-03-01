@@ -1,11 +1,13 @@
 # FM Transmitter
 
-This is a work in progress project that aims to create an FM transmitter
+- This is a work in progress project that aims to create an FM transmitter
 using just an FPGA.
 
-The idea is to build SDR (Signal-Defined Radio) and some signal
+- The idea is to build SDR (Signal-Defined Radio) and some signal
 processing modules and send the FM signal through the 1 bit digital output
 from the FPGA.
+
+- The current code transmits an FM signal at 99MHz, with a sinusoidal message.
 
 For that, we are using the Techs:
 
@@ -44,9 +46,9 @@ Thus, we already built some blocks to implement our FM transmitter:
 - [x] Create and test an HPSDM (High-Pass Delta-Sigma Modulator)
 - [x] Create and test an FM modulator in medium fs
 - [x] Create and test a DUC chain using the developed modules
-- [ ] Test high-frequency sinusoid output on-board
-- [ ] Test FM modulation and transmission with no input on-board
-- [ ] test FM transmitter using sinusoidal input
+- [x] Test high-frequency sinusoid output on-board
+- [x] Test FM modulation and transmission with no input on-board
+- [x] test FM transmitter using sinusoidal input
 - [ ] Test the FM transmitter on-board with audio input.
 - [ ] (Optional) Replace AD from Codec by LPDSM (Low-pass Delta-Sigma Modulator)
 
@@ -73,7 +75,7 @@ Thus, we already built some blocks to implement our FM transmitter:
   - [x] FM modulator
 - [x] DA $\Sigma\Delta$ modulator
 - [ ] AD $\Sigma\Delta$ modulator
-- [ ] FM transmitter
+- [x] FM transmitter
 - [ ] Use an LPSDM (Low-Pass Sigma-Delta Modulator) instead of using the built-in ADC from Max10.
 
 # Testing
@@ -139,3 +141,6 @@ Currently, there are tests for:
   - Test different intermediate frequency and output sample rates
   - Test with Fs out = Fclk
   - Check the SNR of the output signal.
+- [x] [transmitter](src/sdr-tools/transmitter.v) ([test file](tests/test_transmitter.py))
+  - Just test signal integrity in the output
+  - TODO: test different input signals.
