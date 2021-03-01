@@ -48,57 +48,83 @@ module max10 (
     );
     wire rst_delayed_n = ~rst_delayed;
 
-    wire clk_216;
-    PLL2 PLL (
+    wire clk_48; // 48MHZ
+    wire clk_216; // 216MHz
+    PLL PLL (
         .areset(rst),
-        .inclk0(clk), // 50MHz
-        .c0(clk_216)  // 216MHz
+        .clk_in(clk), // 50MHz
+        .clk_48(clk_48),
+        .clk_216(clk_216)
+    );
+
+    // Codec
+    wire [11:0] ADC_RD;
+    wire ADC_RESPONSE;
+    wire SAMPLE_TR;
+    MAX10_ADC madc (
+        .SYS_CLK(clk_48),
+        .SYNC_TR(SAMPLE_TR),
+        .RESET_n(rst_delayed_n),
+        .ADC_CH(5'd7),
+        .DATA(ADC_RD),
+        .DATA_VALID(ADC_RESPONSE),
+        .FITER_EN(1'b1)
+    );
+
+    wire ROM_CK;
+    wire [15:0] SUM_AUDIO;
+    wire [15:0] TODAC = {~SUM_AUDIO[15], SUM_AUDIO[14:0]};
+    DAC16 dac1 (
+        .LOAD(ROM_CK),
+        .RESET_N(FPGA_RESET_n),
+        .CLK_50(clk_48),
+        .DATA16(TODAC),
+        .DIN(DAC_DATA),
+        .SCLK(DAC_SCLK),
+        .SYNC(DAC_SYNC_n)
+    );
+
+    // AUDIO CODEC SPI CONFIG
+    // I2S mode; fs = 48khz; MCLK = 24.567MhZ x 2
+    AUDIO_SPI_CTL_RD u1 (
+        .iRESET_n(rst_delayed_n),
+        .iCLK_50(clk),
+        .oCS_n(AUDIO_SCL_SS_n),   //SPI interface mode chip-select signal
+        .oSCLK(AUDIO_SCLK_MFP3),  //SPI serial clock
+        .oDIN(AUDIO_SDA_MOSI),   //SPI Serial data output
+        .iDOUT(AUDIO_MISO_MFP4)   //SPI serial data input
+    );
+
+    // I2S PROCESSS CODEC LINE OUT
+    // DAC out
+    wire [15:0] DATA16_MIC;
+    I2S_ASSESS i2s (
+        .SAMPLE_TR(SAMPLE_TR),
+        .AUDIO_MCLK(clk_48),
+        .AUDIO_BCLK(AUDIO_BCLK),
+        .AUDIO_WCLK(AUDIO_WCLK),
+
+        .SDATA_OUT(AUDIO_DIN_MFP1),
+        .SDATA_IN(AUDIO_DOUT_MFP2),
+        .RESET_n(rst_delayed_n),
+        .ADC_MIC(ADC_RD),
+        .SW_BYPASS(1'b1),      // 0:on-board mic, 1 :line-in
+        .SW_OBMIC_SIN(1'b0),   // 1:sin, 0 : mic
+        .ROM_ADDR(),
+        .DATA16_MIC(DATA16_MIC),
+        .ROM_CK(ROM_CK),
+        .SUM_AUDIO(SUM_AUDIO)
     );
 
     wire stb_in;
-    wire [13:0] stb_rate = 4500;
+    wire [13:0] stb_rate = 1000;
     strober #(14)
-        strobe_out_module (clk_216, rst, enable, stb_rate, stb_in);
+        strobe_out_module (clk_48, rst, enable, stb_rate, stb_in);
 
     localparam WIDTH = 16;
 
-    /************** Generate 1k frequency sinusoidal ***************/
-    reg [4:0] counter;
-    always @(posedge clk_216)
-        if (rst)
-        begin
-            counter <= 0;
-        end else if (stb_in)
-        begin
-            if (counter == 19)
-                counter <= 0;
-            else
-                counter <= counter + 5'd1;
-        end
-
-    wire [15:0] signal_i[0:19];
-    assign signal_i[0] =  16'h0000;
-    assign signal_i[1] =  16'h278E;
-    assign signal_i[2] =  16'h4B3C;
-    assign signal_i[3] =  16'h678D;
-    assign signal_i[4] =  16'h79BB;
-    assign signal_i[5] =  16'h7FFF;
-    assign signal_i[6] =  16'h79BB;
-    assign signal_i[7] =  16'h678D;
-    assign signal_i[8] =  16'h4B3C;
-    assign signal_i[9] =  16'h278E;
-    assign signal_i[10] = 16'h0000;
-    assign signal_i[11] = 16'hD872;
-    assign signal_i[12] = 16'hB4C4;
-    assign signal_i[13] = 16'h9873;
-    assign signal_i[14] = 16'h8645;
-    assign signal_i[15] = 16'h8001;
-    assign signal_i[16] = 16'h8645;
-    assign signal_i[17] = 16'h9873;
-    assign signal_i[18] = 16'hB4C4;
-    assign signal_i[19] = 16'hD872;
-    wire [15:0] signal = signal_i[counter];	//  2,5KHz
-    /**********************************************************************/
+    wire stb_in_216;
+    edge_detector #("RISE") convert_stb (clk_216, stb_in, stb_in_216);
 
     wire [WIDTH-1:0] data_int;
     wire stb_int;
@@ -115,8 +141,8 @@ module max10 (
         .clk(clk_216),
         .rst(rst),
 
-        .data_in(signal),
-        .stb_in(stb_in),
+        .data_in(DATA16_MIC),
+        .stb_in(stb_in_216),
 
         .data_int(data_int),
         .stb_int(stb_int),
@@ -138,9 +164,24 @@ module max10 (
         .stb_in(stb_int)
     );
 
-    assign GPIO[0] = rf_out;
+    // SOUND-LEVEL Display to LED
+    wire [8:0] LED;
+    LED_METER led (
+        .RESET_n(rst_delayed_n),
+        .CLK(clk_48),
+        .SAMPLE_TR(SAMPLE_TR),
+        .VALUE({~SUM_AUDIO[15], SUM_AUDIO[14:4]}),
+        .LED(LED)
+    );
 
-    // assign LEDR = {rf_out, 9'd0};
-    // assign SW = {rf_out, 9'd0};
+    // Output assignments
+    assign AUDIO_MCLK       = clk_48;
+    assign AUDIO_GPIO_MFP5  = 1;
+    assign AUDIO_SPI_SELECT = 1; // SPI mode
+    assign AUDIO_RESET_n    = rst_delayed_n;
+
+    assign LEDR = {1'b0, LED};
+
+    assign GPIO[0] = rf_out;
 
 endmodule

@@ -1,22 +1,21 @@
 `timescale 1 ps / 1 ps
-module PLL2 (
+module PLL (
     input areset,
-    input inclk0,
-    output c0
+    input clk_in,
+    output clk_48,
+    output clk_216
 );
 
     `ifdef IS_ALTERA
-    wire [4:0] sub_wire0;
+    wire [4:0] out_clks;
     wire [0:0] sub_wire4 = 1'h0;
-    wire [0:0] sub_wire1 = sub_wire0[0:0];
-    assign c0 = sub_wire1;
-    wire  sub_wire2 = inclk0;
-    wire [1:0] sub_wire3 = {sub_wire4, sub_wire2};
+    assign clk_48 = out_clks[0];
+    assign clk_216 = out_clks[1];
 
     altpll altpll_component (
                 .areset (areset),
-                .inclk (sub_wire3),
-                .clk (sub_wire0),
+                .inclk ({1'b0, clk_in}),
+                .clk (out_clks),
                 .activeclock (),
                 .clkbad (),
                 .clkena ({6{1'b1}}),
@@ -55,8 +54,12 @@ module PLL2 (
         altpll_component.bandwidth_type = "AUTO",
         altpll_component.clk0_divide_by = 25,
         altpll_component.clk0_duty_cycle = 50,
-        altpll_component.clk0_multiply_by = 108,
-        altpll_component.clk0_phase_shift = "12860",
+        altpll_component.clk0_multiply_by = 24,
+        altpll_component.clk0_phase_shift = "0",
+        altpll_component.clk1_divide_by = 25,
+        altpll_component.clk1_duty_cycle = 50,
+        altpll_component.clk1_multiply_by = 108,
+        altpll_component.clk1_phase_shift = "12860",
         altpll_component.compensate_clock = "CLK0",
         altpll_component.inclk0_input_frequency = 20000,
         altpll_component.intended_device_family = "Cyclone IV E",
@@ -107,7 +110,8 @@ module PLL2 (
         altpll_component.port_extclk3 = "PORT_UNUSED",
         altpll_component.width_clock = 5;
     `else
-        assign c0 = inclk0;
+        assign clk_48 = clk_in;
+        assign clk_216 = clk_in;
     `endif
 
 endmodule

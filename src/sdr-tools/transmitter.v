@@ -34,7 +34,7 @@ module transmitter #(
     localparam WIDTH = 16;
     localparam FS_INT = FS_IN*RATE_INT;
     localparam FS_OUT = FCLK;
-    localparam FC_INT = FS_INT/8;
+    localparam FC_INT = FS_INT/6;
 
     wire [WIDTH-1:0] data_fm_i;
     wire [WIDTH-1:0] data_fm_q;
