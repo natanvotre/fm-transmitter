@@ -9,7 +9,7 @@ module PLL2 (
     wire [4:0] sub_wire0;
     wire [0:0] sub_wire4 = 1'h0;
     wire [0:0] sub_wire1 = sub_wire0[0:0];
-    wire  c0 = sub_wire1;
+    assign c0 = sub_wire1;
     wire  sub_wire2 = inclk0;
     wire [1:0] sub_wire3 = {sub_wire4, sub_wire2};
 
