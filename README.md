@@ -1,13 +1,10 @@
 # FM Transmitter
 
-- This is a work in progress project that aims to create an FM transmitter
-using just an FPGA.
+This is an FM transmitter using just an FPGA. This project uses SDR
+(Signal-Defined Radio) techniques to transmit an FM signal around 100MHz
+frequency band using just the FPGA, without any other device.
 
-- The idea is to build SDR (Signal-Defined Radio) and some signal
-processing modules and send the FM signal through the 1 bit digital output
-from the FPGA.
-
-- The current code transmits an FM signal at 99MHz, with a sinusoidal message.
+- The current code transmits the microphone input in an FM signal at 99MHz.
 
 For that, we are using the Techs:
 
@@ -27,6 +24,8 @@ Thus, we already built some blocks to implement our FM transmitter:
 
 - **Current Documentations**:
   - [CORDIC](docs/cordic.md)
+
+- Instructions to setup this project on your device are coming!
 
 ## Block Diagram
 
@@ -49,7 +48,7 @@ Thus, we already built some blocks to implement our FM transmitter:
 - [x] Test high-frequency sinusoid output on-board
 - [x] Test FM modulation and transmission with no input on-board
 - [x] test FM transmitter using sinusoidal input
-- [ ] Test the FM transmitter on-board with audio input.
+- [x] Test the FM transmitter on-board with audio input.
 - [ ] (Optional) Replace AD from Codec by LPDSM (Low-pass Delta-Sigma Modulator)
 
 # Features
@@ -78,11 +77,10 @@ Thus, we already built some blocks to implement our FM transmitter:
 - [x] FM transmitter
 - [ ] Use an LPSDM (Low-Pass Sigma-Delta Modulator) instead of using the built-in ADC from Max10.
 
-# Testing
+# CI
 
-Currently, there is lint and unit testing, meaning `unit testing` as
-test benches for each module implemented on the code.
-
+- Verilog lint;
+- HDL unit tests using Cocotb + Pytest.
 ## Unit testing
 
 For the tests, it has been used python, using Cocotb + Pytest to perform
@@ -98,8 +96,6 @@ It allows:
 
 Currently, there are tests for:
 
-- [x] [mocked max10](src/max10.v) ([test file](tests/test_max10.py))
-  - Mocked test file
 - [x] [reset_delay](src/utils/reset_delay.v) ([test file](tests/test_reset_delay.py))
   - Test if the parameter delay applies the correct delay
   - Assert if it is working
