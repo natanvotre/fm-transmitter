@@ -12,8 +12,10 @@ module transmitter #(
     input [15:0] data_in,
     input stb_in,
 
+    output [15:0] data_int,
+    output stb_int,
+
     output rf_out,
-    // output [15:0] rf_out,
     output stb_out
 );
     wire enable = ~rst;
@@ -82,9 +84,16 @@ module transmitter #(
     hpdsm #(WIDTH)
         hpdsm (clk, rst, duc_data_out, dac_out);
 
+    assign data_int = data_fm_i;
+    assign stb_int = stb_fm;
+
     assign rf_out = dac_out;
     assign stb_out = duc_stb_out;
 
     // assign rf_out = duc_data_out;
+    // assign stb_out = duc_stb_out;
+
+    // assign rf_out = data_fm_i;
+    // assign stb_out = stb_fm;
 
 endmodule

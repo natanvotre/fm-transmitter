@@ -26,6 +26,8 @@ module max10 (
     output  AUDIO_SPI_SELECT,
     inout   AUDIO_WCLK,
 
+    output [7:0] GPIO,
+
     // DAC
     inout   DAC_DATA,
     output  DAC_SCLK,
@@ -46,27 +48,6 @@ module max10 (
     );
     wire rst_delayed_n = ~rst_delayed;
 
-    wire clk_48; // 48MHZ
-    AUDIO_PLL pll (
-        .inclk0(clk),
-        .c0(clk_48)
-    );
-
-    // Codec
-    wire [11:0] ADC_RD;
-    wire ADC_RESPONSE;
-    wire SAMPLE_TR;
-    MAX10_ADC madc (
-        .SYS_CLK(clk_48),
-        .SYNC_TR(SAMPLE_TR),
-        .RESET_n(rst_delayed_n),
-        .ADC_CH(5'd7),
-        .DATA(ADC_RD),
-        .DATA_VALID(ADC_RESPONSE),
-        .FITER_EN(1'b1)
-    );
-    wire [15:0] data_in = {ADC_RD, 4'd0};
-
     wire clk_216;
     PLL2 PLL (
         .areset(rst),
@@ -75,8 +56,8 @@ module max10 (
     );
 
     wire stb_in;
-    wire [11:0] stb_rate = 4500;
-    strober #(4)
+    wire [13:0] stb_rate = 4500;
+    strober #(14)
         strobe_out_module (clk_216, rst, enable, stb_rate, stb_in);
 
     localparam WIDTH = 16;
@@ -119,6 +100,8 @@ module max10 (
     wire [15:0] signal = signal_i[counter];	//  2,5KHz
     /**********************************************************************/
 
+    wire [WIDTH-1:0] data_int;
+    wire stb_int;
     wire rf_out;
     wire stb_out;
     transmitter #(
@@ -126,14 +109,17 @@ module max10 (
         .FS_IN(50'd48000),
         .RATE_INT(50'd100),
         .FC(50'd99000000),
-        .K(50'd800000),
-        .IEXT(4)
+        .K(50'd200000),
+        .IEXT(7)
     ) transmitter (
         .clk(clk_216),
         .rst(rst),
 
         .data_in(signal),
-        .stb_in(stb_in_cordic),
+        .stb_in(stb_in),
+
+        .data_int(data_int),
+        .stb_int(stb_int),
 
         .rf_out(rf_out),
         .stb_out(stb_out)
@@ -143,21 +129,18 @@ module max10 (
     frame_monitor #(
         .ID("NTN"),
         .WIDTH(WIDTH),
-        .LENGTH(11)
+        .LENGTH(12)
     ) frame_monitor_1 (
         .clk(clk_216),
         .rst(rst),
 
-        .data_in({~rf_i, {15{rf_i}}}),
-        .stb_in(stb_out)
+        .data_in(data_int),
+        .stb_in(stb_int)
     );
 
-    // Output assignments
-    assign AUDIO_MCLK       = clk_48;
-    assign AUDIO_GPIO_MFP5  = 1;
-    assign AUDIO_SPI_SELECT = 1; // SPI mode
-    assign AUDIO_RESET_n    = rst_delayed_n;
+    assign GPIO[0] = rf_out;
 
-    assign LED = {rf_out, 7'd0};
+    // assign LEDR = {rf_out, 9'd0};
+    // assign SW = {rf_out, 9'd0};
 
 endmodule
